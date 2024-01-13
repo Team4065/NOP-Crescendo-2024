@@ -72,7 +72,7 @@ public class VisionLimelight implements VisionIO {
         inputs.crop = getValueDoubleArray("crop");
         var results = LimelightHelpers.getLatestResults(this.name);
         if (results != null && results.targetingResults != null && results.targetingResults.valid) {
-        inputs.numTargets = results.targetingResults.targets_Fiducials.length;
+            inputs.numTargets = results.targetingResults.targets_Fiducials.length;
         }
     }
 

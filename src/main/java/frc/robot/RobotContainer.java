@@ -6,6 +6,9 @@ package frc.robot;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -33,6 +36,7 @@ import frc.robot.util.PathFindingWithPath;
 import java.util.HashMap;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
+import com.ctre.phoenix6.Utils;
 import com.pathplanner.lib.auto.AutoBuilder;
 
 /**
@@ -49,6 +53,7 @@ public class RobotContainer {
   public static JoystickButton AB = new JoystickButton(controller, 1);
   public static JoystickButton XB = new JoystickButton(controller, 3);
   public static JoystickButton BB = new JoystickButton(controller, 2);
+  public static JoystickButton YB = new JoystickButton(controller, 4);
 
   static LoggedDashboardChooser<Command> m_chooser = new LoggedDashboardChooser<>("Auto Chooser");
   static HashMap<Command, String> autoMap = new HashMap<>();
@@ -77,7 +82,7 @@ public class RobotContainer {
           new ModuleIOSim()
         );
 
-        m_vision = new Vision(new VisionSimIO());
+        m_vision = new Vision(new VisionSimIO(m_swerve::getPose));
 
         break;
       default:
@@ -88,7 +93,6 @@ public class RobotContainer {
           new ModuleIO() {},
           new ModuleIO() {}
         );
-
         m_vision = new Vision(new VisionIO() {});
         break;
     }
@@ -119,7 +123,11 @@ public class RobotContainer {
       () -> -controller.getRawAxis(4)
     ));
 
-    XB.onTrue(new ResetOdo());
+    AB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Stage Middle Finisher", AB));
+    BB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Source Finisher 1", BB));
+    XB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("AMP Finisher", XB));
+
+    YB.onTrue(new ResetOdo());
   }
 
   /**

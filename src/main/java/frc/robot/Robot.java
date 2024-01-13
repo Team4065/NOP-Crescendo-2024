@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
@@ -58,7 +59,7 @@ public class Robot extends LoggedRobot {
         // Replaying a log, set up replay source
       case REPLAY:
         setUseTiming(false); // Run as fast as possible
-        String logPath = "C:/Users/Jainish/Desktop/FRC/Robot code/2023-24/AdvantageKit Real Logs/Log_1f703da53dd3a321.wpilog";
+        String logPath = "";
         Logger.setReplaySource(new WPILOGReader(logPath));
         break;
     }

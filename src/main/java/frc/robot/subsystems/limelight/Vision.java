@@ -38,11 +38,11 @@ public class Vision extends SubsystemBase {
     VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30))
   );
 
+
   public Vision(VisionIO camera) {
     cameraInputs = new VisionInputsAutoLogged();
 
     camera.updateInputs(cameraInputs);
-
     this.camera = camera;
   }
 

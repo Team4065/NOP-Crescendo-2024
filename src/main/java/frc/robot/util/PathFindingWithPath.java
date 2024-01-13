@@ -7,6 +7,7 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.robot.Constants;
 import frc.robot.RobotContainer;
 
 public class PathFindingWithPath {
@@ -14,7 +15,7 @@ public class PathFindingWithPath {
         PathPlannerPath endPathTraj = PathPlannerPath.fromPathFile(endPath);
 
         PathConstraints constraints = new PathConstraints(
-            3, 4, 
+            Units.feetToMeters(Constants.SwerveConstants.MAX_SPEED_FEET), 3, 
             Units.degreesToRadians(540), Units.degreesToRadians(720)
         );
 
