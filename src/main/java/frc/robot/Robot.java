@@ -5,15 +5,24 @@
 package frc.robot;
 
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.util.LocalADStarAK;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -23,6 +32,12 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.path.PathPlannerTrajectory;
+import com.pathplanner.lib.path.PathPoint;
+import com.pathplanner.lib.path.PathPlannerTrajectory.State;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 
 /**
@@ -36,6 +51,13 @@ public class Robot extends LoggedRobot {
 
   private RobotContainer m_robotContainer;
   public static String allianceColor;
+  ShuffleboardTab autoTab = Shuffleboard.getTab("Autonomous");
+  GenericEntry allianceColorWidget = autoTab.add("ALLIANCE", true) 
+    .withProperties(Map.of("colorWhenTrue", "blue"))
+    .withPosition(0, 1)
+    .withSize(3, 1)
+    .getEntry();
+
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -67,6 +89,8 @@ public class Robot extends LoggedRobot {
     Logger.start();
     m_robotContainer = new RobotContainer();
 
+    Shuffleboard.getTab("Autonomous").add(Constants.displayField);
+
     // Set A* algorithim for AdvantageKit as the default path-finding algorithim
     Pathfinding.setPathfinder(new LocalADStarAK());
   }
@@ -90,14 +114,44 @@ public class Robot extends LoggedRobot {
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
   public void disabledInit() {
-    // Detect alliance color
+
   }
 
   @Override
   public void disabledPeriodic() {
     // red --> 1, 2, 3
     // blue --> 4, 5, 6
-    allianceColor = (LoggedDriverStation.getDSData().allianceStation > 3) ? "BLUE" : "RED";
+    int robotPos = LoggedDriverStation.getDSData().allianceStation; 
+    allianceColor = (robotPos > 3) ? "BLUE" : "RED";
+
+    if (robotPos > 3) {
+      allianceColorWidget.setBoolean(true);
+    } else if (robotPos <= 3) {
+      allianceColorWidget.setBoolean(false);
+    } else {
+      allianceColorWidget.setString("ERROR");
+    }
+
+    Trajectory finalTrajectoryToDisplay;
+
+    if (RobotContainer.m_chooser.get() != RobotContainer.noAutoCommand) {
+      PathPlannerPath pathToDisplay = PathPlannerAuto.getPathGroupFromAutoFile(Constants.autoRoutines.get(RobotContainer.m_chooser.get())).get(0);
+      List<PathPoint> pathPoints = pathToDisplay.getAllPathPoints();
+      List<Pose2d> posesOnTrajectory = new ArrayList<>();
+
+
+      for (int i = 0; i < pathPoints.size(); i++) {
+        posesOnTrajectory.add(i, new Pose2d(pathPoints.get(i).position, new Rotation2d(0)));
+      }
+
+      finalTrajectoryToDisplay = TrajectoryGenerator.generateTrajectory(posesOnTrajectory, new TrajectoryConfig(4, 4));
+
+    } else {
+      finalTrajectoryToDisplay = new Trajectory();
+    }
+
+    Constants.displayField.getObject("Field").setTrajectory(finalTrajectoryToDisplay);
+
   }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */

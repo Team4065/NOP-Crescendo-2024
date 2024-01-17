@@ -94,18 +94,17 @@ public class VisionSimIO implements VisionIO {
 
 
     if (estimatedPhotonPose.isEmpty()) {
-      System.out.println();
       estimatedVisionPose = new Pose2d();
     } else {
       estimatedVisionPose = estimatedPhotonPose.get().estimatedPose.toPose2d();
     }
 
-    inputs.validTarget = false;
+    inputs.validTarget = results.hasTargets();
     inputs.horizontalCrosshairOffset = 0;
     inputs.verticalCrosshairOffset = 0;
-    inputs.targetArea = 0;
-    inputs.skew = 0;
-    inputs.pipelineLatency = 0;
+    inputs.targetArea = results.hasTargets() ? results.getBestTarget().getArea() : 0;
+    inputs.skew = results.hasTargets() ? results.getBestTarget().getSkew() : 0;
+    inputs.pipelineLatency = results.getLatencyMillis();
     inputs.shortSidelength = 0;
     inputs.longSideLength = 0;
     inputs.horizontalSideLength = 0;
@@ -120,7 +119,7 @@ public class VisionSimIO implements VisionIO {
     inputs.botpose_targetspace = new double[] {};
     inputs.camerapose_robotspace = new double[] {};
     inputs.botpose = new double[] {estimatedVisionPose.getX(), estimatedVisionPose.getY(), 0, 0, 0, estimatedVisionPose.getRotation().getDegrees(), results.getLatencyMillis()};
-    inputs.tid = 0;
+    inputs.tid = results.hasTargets() ? results.getBestTarget().getFiducialId() : 0;
     inputs.neuralDetectorID = 0;
     inputs.ledMode = 0;
     inputs.camMode = 0;

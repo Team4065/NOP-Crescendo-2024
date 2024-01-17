@@ -12,7 +12,11 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -22,10 +26,18 @@ import frc.robot.Robot;
 import frc.robot.subsystems.swerve.modules.Module;
 import frc.robot.subsystems.swerve.modules.ModuleIO;
 
+import java.util.List;
+
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.inputs.LoggedDriverStation;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.path.PathPlannerTrajectory;
+import com.pathplanner.lib.path.PathPoint;
+import com.pathplanner.lib.path.PathPlannerTrajectory.State;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
@@ -70,12 +82,16 @@ public class Swerve extends SubsystemBase {
       this
     );   
     
-    PathPlannerLogging.setLogActivePathCallback(
-      (activePath) -> {
-        Logger.recordOutput("Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
-      }
-    );
+    PathPlannerLogging.setLogActivePathCallback((activePath) -> {
+      // Log the active path in AdvantageKit
+      Logger.recordOutput("Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
 
+      // Display the active path on shuffleboard
+      if (!LoggedDriverStation.getDSData().autonomous) {
+        Trajectory trajToDisplay = (activePath.size()) > 0 ? TrajectoryGenerator.generateTrajectory(activePath, new TrajectoryConfig(4 ,3)) : new Trajectory();
+        Constants.displayField.getObject("Field").setTrajectory(trajToDisplay);
+      }
+    });
   }
 
   @Override
@@ -125,6 +141,8 @@ public class Swerve extends SubsystemBase {
 
     pose = pose.exp(twist);
     Logger.recordOutput("Odometry/Robot", getPose());
+
+    Constants.displayField.setRobotPose(getPose());
   }
 
   public SwerveModulePosition[] getModulePos() {

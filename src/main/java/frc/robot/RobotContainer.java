@@ -39,12 +39,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import com.ctre.phoenix6.Utils;
 import com.pathplanner.lib.auto.AutoBuilder;
 
-/**
- * This class is where the bulk of the robot should be declared. Since Command-based is a
- * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
- * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
- * subsystems, commands, and trigger mappings) should be declared here.
- */
+
 public class RobotContainer {
   public static Swerve m_swerve;
   public static Vision m_vision;
@@ -55,8 +50,9 @@ public class RobotContainer {
   public static JoystickButton BB = new JoystickButton(controller, 2);
   public static JoystickButton YB = new JoystickButton(controller, 4);
 
-  static LoggedDashboardChooser<Command> m_chooser = new LoggedDashboardChooser<>("Auto Chooser");
-  static HashMap<Command, String> autoMap = new HashMap<>();
+  public static LoggedDashboardChooser<Command> m_chooser = new LoggedDashboardChooser<>("Auto Chooser");
+
+  public static Command noAutoCommand = new InstantCommand();
 
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -97,23 +93,12 @@ public class RobotContainer {
         break;
     }
 
-    m_chooser.addDefaultOption("P1 - 3R", AutoCommandBuilder.returnAutoCommand("Pos 1- 3 rings"));
+    m_chooser.addDefaultOption("NOTHING", noAutoCommand);
+    m_chooser.addOption("P1 - 3R", AutoCommandBuilder.returnAutoCommand("Pos 1 - 3 rings"));
     Shuffleboard.getTab("Autonomous").add(m_chooser.getSendableChooser()).withSize(3, 1);
 
-    // Setting up PathPlanner auto selector
-    // Configure the trigger bindings
     configureBindings();
   }
-
-  /**
-   * Use this method to define your trigger->command mappings. Triggers can be created via the
-   * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
-   * predicate, or via the named factories in {@link
-   * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for {@link
-   * CommandXboxController Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
-   * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
-   * joysticks}.
-   */
 
   private void configureBindings() {
     m_swerve.setDefaultCommand(new SwerveControl(
@@ -130,11 +115,6 @@ public class RobotContainer {
     YB.onTrue(new ResetOdo());
   }
 
-  /**
-   * Use this to pass the autonomous command to the main {@link Robot} class.
-   *
-   * @return the command to run in autonomous
-   */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
     return m_chooser.get();
