@@ -7,6 +7,7 @@ package frc.robot;
 import java.util.HashMap;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -35,7 +36,7 @@ public final class Constants {
     public static final double DRIVE_GEAR_RATIO = 8.14;
     public static final double TURN_GEAR_RATIO = 150 / 7;
 
-    public static final int encoderTicks = 2048;
+    public static final int encoderTicks = 2048; // Encoder ticks for CanCoder and REV Encoder 
 
     public static final double wheel_radius_meters = Units.inchesToMeters(4);
 
@@ -66,5 +67,22 @@ public final class Constants {
       public static final int backRightCanCoderID = 3;
       public static final Rotation2d backRightEncoderOffset =  new Rotation2d(0.16260196351587786);
     }
+  }
+
+  public static class ElevatorConstants {
+    public static final DCMotor simGearbox = DCMotor.getFalcon500(1);
+    public static final double gearRatio = 10.0;
+    public static final double carriageMassKg = 4;
+    public static final double elevatorDrumRadius = Units.inchesToMeters(2.0);
+    public static final double fullyInExtension = Units.inchesToMeters(27);
+    public static final double minHeightMeters = Units.inchesToMeters(27 - 9.21);
+    public static final double maxHeightMeters = Units.feetToMeters(4) - Units.inchesToMeters(9.21);
+
+    public static final int extenstionMotorID = 13;
+
+    public static final int encoderAChannel = 0;
+    public static final int encoderBChannel = 1;
+
+    public static final double elevatorEncoderDistPerPulse = 2.0 * Math.PI * elevatorDrumRadius / 4096;
   }
 }

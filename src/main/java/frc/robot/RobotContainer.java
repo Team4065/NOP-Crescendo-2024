@@ -16,10 +16,15 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.FeedForwardCharacterization;
 import frc.robot.commands.ResetOdo;
+import frc.robot.commands.SetElevatorLength;
 import frc.robot.commands.SwerveControl;
+import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.elevator.ElevatorIO;
+import frc.robot.subsystems.elevator.ElevatorIOSim;
 import frc.robot.subsystems.limelight.Vision;
 import frc.robot.subsystems.limelight.VisionIO;
 import frc.robot.subsystems.limelight.VisionLimelight;
@@ -43,12 +48,18 @@ import com.pathplanner.lib.auto.AutoBuilder;
 public class RobotContainer {
   public static Swerve m_swerve;
   public static Vision m_vision;
+  public static Elevator m_elevator;
 
   public static GenericHID controller = new GenericHID(0);
   public static JoystickButton AB = new JoystickButton(controller, 1);
   public static JoystickButton XB = new JoystickButton(controller, 3);
   public static JoystickButton BB = new JoystickButton(controller, 2);
   public static JoystickButton YB = new JoystickButton(controller, 4);
+
+  public static POVButton upButton = new POVButton(controller, 0);
+  public static POVButton downButton = new POVButton(controller, 180);
+  public static POVButton rightButton = new POVButton(controller, 90);
+  public static POVButton leftButton = new POVButton(controller, 270);
 
   public static LoggedDashboardChooser<Command> m_chooser = new LoggedDashboardChooser<>("Auto Chooser");
 
@@ -66,8 +77,9 @@ public class RobotContainer {
           new ModuleIOTalonFX(2),
           new ModuleIOTalonFX(3)
         );
-
         m_vision = new Vision(new VisionLimelight("limelight-nop"));
+        m_elevator = new Elevator(new ElevatorIO() {});
+
         break;
       case SIM:
         m_swerve = new Swerve(
@@ -77,7 +89,7 @@ public class RobotContainer {
           new ModuleIOSim(), 
           new ModuleIOSim()
         );
-
+        m_elevator = new Elevator(new ElevatorIOSim());
         m_vision = new Vision(new VisionSimIO(m_swerve::getPose));
 
         break;
@@ -90,6 +102,8 @@ public class RobotContainer {
           new ModuleIO() {}
         );
         m_vision = new Vision(new VisionIO() {});
+        m_elevator = new Elevator(new ElevatorIO() {});
+
         break;
     }
 
@@ -113,10 +127,12 @@ public class RobotContainer {
     XB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("AMP Finisher", XB));
 
     YB.onTrue(new ResetOdo());
+
+    upButton.onTrue(new SetElevatorLength(4));
+    downButton.onTrue(new SetElevatorLength(2));
   }
 
   public Command getAutonomousCommand() {
-    // An example command will be run in autonomous
     return m_chooser.get();
   }
 }

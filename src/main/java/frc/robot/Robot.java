@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
@@ -144,7 +145,7 @@ public class Robot extends LoggedRobot {
         posesOnTrajectory.add(i, new Pose2d(pathPoints.get(i).position, new Rotation2d(0)));
       }
 
-      finalTrajectoryToDisplay = TrajectoryGenerator.generateTrajectory(posesOnTrajectory, new TrajectoryConfig(4, 4));
+      finalTrajectoryToDisplay = TrajectoryGenerator.generateTrajectory(posesOnTrajectory, new TrajectoryConfig(Units.metersToFeet(Constants.SwerveConstants.MAX_SPEED_FEET), Units.metersToFeet(Constants.SwerveConstants.MAX_SPEED_FEET)));
 
     } else {
       finalTrajectoryToDisplay = new Trajectory();
