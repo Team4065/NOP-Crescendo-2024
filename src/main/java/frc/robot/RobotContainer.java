@@ -128,8 +128,9 @@ public class RobotContainer {
 
     YB.onTrue(new ResetOdo());
 
-    upButton.onTrue(new SetElevatorLength(4));
-    downButton.onTrue(new SetElevatorLength(2));
+    upButton.onTrue(new InstantCommand(() -> {m_elevator.reachTarget(90, 1.75);;}));
+    downButton.onTrue(new InstantCommand(() -> {m_elevator.reachTarget(-5, 1);}));
+
   }
 
   public Command getAutonomousCommand() {
