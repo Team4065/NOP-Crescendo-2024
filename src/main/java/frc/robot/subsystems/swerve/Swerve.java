@@ -5,7 +5,9 @@
 package frc.robot.subsystems.swerve;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -228,6 +230,11 @@ public class Swerve extends SubsystemBase {
   // Return robot position
   public Pose2d getPose() {
     return pose;
+  }
+
+  @AutoLogOutput(key = "Odometry/Robot3d")
+  public Pose3d getPose3d() {
+    return new Pose3d(pose.getX(), pose.getY(), 0.3, new Rotation3d(0, 0, pose.getRotation().getRadians()));
   }
 
   public SwerveDriveKinematics getKinematics() {

@@ -75,8 +75,8 @@ public final class Constants {
     public static final double carriageMassKg = 4;
     public static final double elevatorDrumRadius = Units.inchesToMeters(2.0);
     public static final double fullyInExtension = Units.inchesToMeters(27);
-    public static final double minHeightMeters = Units.inchesToMeters(27 - 9.21);
-    public static final double maxHeightMeters = Units.feetToMeters(4) - Units.inchesToMeters(9.21);
+    public static final double minHeightMeters = 0;
+    public static final double maxHeightMeters = Units.feetToMeters(1.75);
 
     public static final int extenstionMotorID = 13;
 

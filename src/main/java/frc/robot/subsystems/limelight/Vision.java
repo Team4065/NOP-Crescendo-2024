@@ -4,12 +4,18 @@
 
 package frc.robot.subsystems.limelight;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTable;
@@ -46,6 +52,9 @@ public class Vision extends SubsystemBase {
     this.camera = camera;
   }
 
+  AprilTagFieldLayout tagLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
+
+
   @Override
   public void periodic() {
     camera.updateInputs(cameraInputs);
@@ -54,11 +63,18 @@ public class Vision extends SubsystemBase {
 
     m_PoseEstimator.update(RobotContainer.m_swerve.getRotation(), RobotContainer.m_swerve.getModulePos());
     if (cameraInputs.botpose.length > 0) {
-      if (cameraInputs.targetArea > 1 && cameraInputs.targetArea < 3) {
-        RobotContainer.m_swerve.setPose(calculateLLPose(cameraInputs));
-      }
+      // if (cameraInputs.targetArea > 1 && cameraInputs.targetArea < 3) {
+      //   RobotContainer.m_swerve.setPose(calculateLLPose(cameraInputs));
+      // }
       m_PoseEstimator.addVisionMeasurement(calculateLLPose(cameraInputs), Timer.getFPGATimestamp() - (cameraInputs.botpose_wpired[6] / 1000.0));
     }
+
+    List<Pose3d> detectedTagPoses = new ArrayList<>();
+    for (int i = 0; i < VisionSimIO.results.getTargets().size(); i++) {
+      detectedTagPoses.add(tagLayout.getTagPose(VisionSimIO.results.getTargets().get(i).getFiducialId()).get());
+    }
+
+    Logger.recordOutput("PoseVision/TagPoses", detectedTagPoses.toArray(new Pose3d[detectedTagPoses.size()]));
   }
 
   private NetworkTable getTable(String table) {

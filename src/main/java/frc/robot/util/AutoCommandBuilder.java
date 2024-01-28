@@ -1,6 +1,7 @@
 package frc.robot.util;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;

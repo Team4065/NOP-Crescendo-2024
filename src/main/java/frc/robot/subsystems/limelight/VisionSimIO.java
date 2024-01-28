@@ -1,8 +1,11 @@
 package frc.robot.subsystems.limelight;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import org.littletonrobotics.junction.Logger;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
@@ -12,6 +15,7 @@ import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.targeting.PhotonPipelineResult;
 
+import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -26,7 +30,7 @@ import frc.robot.subsystems.limelight.Vision.SnapshotMode;
 
 public class VisionSimIO implements VisionIO {
   // Using Photonlib to "simulate" limelight vision
-  String simCamName = "sim_cam";
+  String simCamName;
 
   // Set up virtual april tag field
   AprilTagFieldLayout tagLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
@@ -35,21 +39,27 @@ public class VisionSimIO implements VisionIO {
    // Set up camera sim
   SimCameraProperties cameraProp = new SimCameraProperties();
 
-  PhotonCamera fakeCamera = new PhotonCamera(simCamName);
+  PhotonCamera fakeCamera;
 
   PhotonCameraSim cameraSim;
 
 
   // Transform3d cameraPosToRobot = new Transform3d(new Translation3d(0.025, 0.3, 0), new Rotation3d(0, 0, 0));
-  Transform3d cameraPosToRobot = new Transform3d(new Translation3d(-0.635, 0, 0.6096), new Rotation3d(0, 0, Units.degreesToRadians(180)));
+  Transform3d cameraPosToRobot;
 
-  PhotonPoseEstimator photonPoseEstimator = new PhotonPoseEstimator(tagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, fakeCamera, cameraPosToRobot); 
+  PhotonPoseEstimator photonPoseEstimator; 
 
   Supplier<Pose2d> currentRobotPoseSupp;
 
-  public VisionSimIO(Supplier<Pose2d> currentRobotPoseSupp) {
+  public VisionSimIO(Supplier<Pose2d> currentRobotPoseSupp, Transform3d cameraPosToRobot, String simCamName) {
     visionFieldSim = new VisionSystemSim("main");
     visionFieldSim.addAprilTags(tagLayout);
+
+    this.cameraPosToRobot = cameraPosToRobot;
+    this.simCamName = simCamName;
+
+    fakeCamera = new PhotonCamera(simCamName);
+    photonPoseEstimator = new PhotonPoseEstimator(tagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, fakeCamera, cameraPosToRobot); 
     
     cameraProp.setCalibration(1280, 960, Rotation2d.fromDegrees(60));
     // Approximate detection noise with average and standard deviation error in pixels.
@@ -80,24 +90,25 @@ public class VisionSimIO implements VisionIO {
     return photonPoseEstimator.update();
   }
 
+  public static PhotonPipelineResult results;
+
   @Override
   public void updateInputs(VisionInputs inputs) {
     // TO-DO update sim field pose of the robot
     // Implement necessary inputs
-
-    PhotonPipelineResult results = cameraSim.getCamera().getLatestResult();
+  
+    results = cameraSim.getCamera().getLatestResult();
 
     visionFieldSim.update(currentRobotPoseSupp.get());
     var estimatedPhotonPose = getEstimatedGlobalPose();
     Pose2d estimatedVisionPose;
-
-
 
     if (estimatedPhotonPose.isEmpty()) {
       estimatedVisionPose = new Pose2d();
     } else {
       estimatedVisionPose = estimatedPhotonPose.get().estimatedPose.toPose2d();
     }
+    
 
     inputs.validTarget = results.hasTargets();
     inputs.horizontalCrosshairOffset = 0;

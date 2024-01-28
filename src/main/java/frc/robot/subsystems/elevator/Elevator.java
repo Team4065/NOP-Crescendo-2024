@@ -4,22 +4,16 @@
 
 package frc.robot.subsystems.elevator;
 
-import java.math.MathContext;
 
 import org.littletonrobotics.junction.AutoLog;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggedDriverStation;
 
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkLowLevel.MotorType;
-
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -44,8 +38,8 @@ public class Elevator extends SubsystemBase {
   private ElevatorIO io;
   private ElevatorIOInputsAutoLogged elevatorInputs = new ElevatorIOInputsAutoLogged();
 
-  private ProfiledPIDController profiledPIDControl = new ProfiledPIDController(40, 0, 0, new TrapezoidProfile.Constraints(2.45, 2.45));
-  private ElevatorFeedforward m_feedforward = new ElevatorFeedforward(0.0, 0.762, 0.762, 0.0);
+  private ProfiledPIDController profiledPIDControl = new ProfiledPIDController(40, 0, 0, new TrapezoidProfile.Constraints(2.6, 2.6));
+  private ElevatorFeedforward m_feedforward = new ElevatorFeedforward(0.0, 0.762, 1, 0.0);
 
   private double tiltAngle;
 
@@ -71,11 +65,9 @@ public class Elevator extends SubsystemBase {
     this.io = io;
     if (Constants.currentMode == Constants.Mode.SIM) {
       io.setConversionRateSimEncoder(Constants.ElevatorConstants.elevatorEncoderDistPerPulse);
-      System.out.println("IN SIM");
     } 
 
-    tiltAngle = 10;
-    reachExtension(0);
+    reachState("in");
   }
 
   @Override
@@ -93,6 +85,11 @@ public class Elevator extends SubsystemBase {
     eleSim.setInputVoltage(elevatorInputs.elevatorAppliedVolts);
     eleSim.update(0.02);
     io.setDistanceSimEncoderInput(eleSim.getPositionMeters());
+  }
+
+  @AutoLogOutput(key = "Elevator/ConfigPose")
+  public Pose3d blankPose() {
+    return new Pose3d();
   }
 
   public void reachExtension(double extensionFeet) {
@@ -113,12 +110,32 @@ public class Elevator extends SubsystemBase {
     Pose3d basePose = new Pose3d(Units.inchesToMeters(-9.6), 0, Units.inchesToMeters(11), angleRot);
     var extensionPose = basePose.transformBy(new Transform3d(new Translation3d(getEleLength(), 0, 0), new Rotation3d()));
 
-    Logger.recordOutput("Elevator/Mechanism3d", basePose, extensionPose);
+    Logger.recordOutput("Elevator/Mechanism3d", basePose, extensionPose, new Pose3d(new Translation3d(-Units.inchesToMeters(13.014), 0, Units.inchesToMeters(20)), new Rotation3d(0, -Units.degreesToRadians(45), Units.degreesToRadians(180))));
   }
 
   public void reachTarget(double angle, double extensionFeet) {
     profiledPIDControl.setGoal(Units.feetToMeters(extensionFeet));
     tiltAngle = angle;
+  }
+
+  public void reachState(String state) {
+    switch (state) {
+      case "in":
+        reachTarget(10, 0);
+ 
+        break;
+      case "intake":
+        reachTarget(-4, 0.6);
+
+        break;
+      case "amp":
+        reachTarget(90, 1);
+        
+        break;
+      default:
+        System.out.println("INVALID STATE");
+        break;
+    }
   }
 
   @AutoLogOutput(key = "Elevator/ElevatorLength")

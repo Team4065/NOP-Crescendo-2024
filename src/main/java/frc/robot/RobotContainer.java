@@ -9,19 +9,21 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.FeedForwardCharacterization;
-import frc.robot.commands.ResetOdo;
-import frc.robot.commands.SetElevatorLength;
-import frc.robot.commands.SwerveControl;
+import frc.robot.commands.elevator.ReachState;
+import frc.robot.commands.swerve.ResetOdo;
+import frc.robot.commands.swerve.SwerveControl;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
@@ -43,6 +45,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import com.ctre.phoenix6.Utils;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 
 
 public class RobotContainer {
@@ -90,7 +93,12 @@ public class RobotContainer {
           new ModuleIOSim()
         );
         m_elevator = new Elevator(new ElevatorIOSim());
-        m_vision = new Vision(new VisionSimIO(m_swerve::getPose));
+
+        m_vision = new Vision(new VisionSimIO(
+          m_swerve::getPose,
+          new Transform3d(new Translation3d(-Units.inchesToMeters(13.014), 0, Units.inchesToMeters(20)), new Rotation3d(0, -Units.degreesToRadians(45), Units.degreesToRadians(180))),
+          "sim_cam_1"
+        ));
 
         break;
       default:
@@ -107,6 +115,9 @@ public class RobotContainer {
         break;
     }
 
+    NamedCommands.registerCommand("deploy", new ReachState("intake"));
+    NamedCommands.registerCommand("retract", new ReachState("in"));
+
     m_chooser.addDefaultOption("NOTHING", noAutoCommand);
     m_chooser.addOption("P1 - 3R", AutoCommandBuilder.returnAutoCommand("Pos 1 - 3 rings"));
     Shuffleboard.getTab("Autonomous").add(m_chooser.getSendableChooser()).withSize(3, 1);
@@ -122,14 +133,17 @@ public class RobotContainer {
       () -> -controller.getRawAxis(4)
     ));
 
+    
+
     AB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Stage Middle Finisher", AB));
     BB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Source Finisher 1", BB));
     XB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("AMP Finisher", XB));
 
     YB.onTrue(new ResetOdo());
 
-    upButton.onTrue(new InstantCommand(() -> {m_elevator.reachTarget(90, 1.75);;}));
-    downButton.onTrue(new InstantCommand(() -> {m_elevator.reachTarget(-5, 1);}));
+    rightButton.onTrue(new ReachState("in"));
+    upButton.onTrue(new ReachState("amp"));
+    downButton.onTrue(new ReachState("intake"));
 
   }
 

@@ -136,13 +136,15 @@ public class Robot extends LoggedRobot {
     Trajectory finalTrajectoryToDisplay;
 
     if (RobotContainer.m_chooser.get() != RobotContainer.noAutoCommand) {
-      PathPlannerPath pathToDisplay = PathPlannerAuto.getPathGroupFromAutoFile(Constants.autoRoutines.get(RobotContainer.m_chooser.get())).get(0);
-      List<PathPoint> pathPoints = pathToDisplay.getAllPathPoints();
+      int pathsInAuto = PathPlannerAuto.getPathGroupFromAutoFile(Constants.autoRoutines.get(RobotContainer.m_chooser.get())).size();
       List<Pose2d> posesOnTrajectory = new ArrayList<>();
 
+      PathPlannerPath currentPath = PathPlannerAuto.getPathGroupFromAutoFile(Constants.autoRoutines.get(RobotContainer.m_chooser.get())).get(0);
+      List<PathPoint> pathPoints = currentPath.getAllPathPoints();
 
-      for (int i = 0; i < pathPoints.size(); i++) {
-        posesOnTrajectory.add(i, new Pose2d(pathPoints.get(i).position, new Rotation2d(0)));
+
+      for (int j = 0; j < pathPoints.size(); j++) {
+        posesOnTrajectory.add(j, new Pose2d(pathPoints.get(j).position, new Rotation2d(0)));
       }
 
       finalTrajectoryToDisplay = TrajectoryGenerator.generateTrajectory(posesOnTrajectory, new TrajectoryConfig(Units.metersToFeet(Constants.SwerveConstants.MAX_SPEED_FEET), Units.metersToFeet(Constants.SwerveConstants.MAX_SPEED_FEET)));
