@@ -1,0 +1,40 @@
+{
+  "name": "NOP Tera 2024",
+  "sourceUrl": "model.glb",
+  "rotations": [{"axis": "x", "degrees": 0}, {"axis": "y", "degrees": 180}, {"axis": "z", "degrees": -90}],
+  "position": [0.35, 0.36, 0], 
+  "cameras": [
+    {
+      "name": "Camera BL",
+      "rotations": [{"axis": "x", "degrees": 0}, {"axis": "y", "degrees": -25}, {"axis": "z", "degrees": 205}],
+      "position": [-0.1524, 0.0762, 0.4064],
+      "resolution": [1280, 960],
+      "fov": 54
+    },
+    {
+      "name": "Camera BR",
+      "rotations": [{"axis": "x", "degrees": 0}, {"axis": "y", "degrees": -25}, {"axis": "z", "degrees": 155}],
+      "position": [-0.1524, -0.0762, 0.4064],
+      "resolution": [1280, 960],
+      "fov": 54
+    }
+  ],
+  "components": [
+    {
+      "zeroedRotations": [{"axis": "x", "degrees": 10}, {"axis": "y", "degrees": 180}, {"axis": "z", "degrees": -90}],
+      "zeroedPosition": [0.539, 0.36, -0.378]
+    },
+    {
+      "zeroedRotations": [{"axis": "x", "degrees": 0}, {"axis": "y", "degrees": 180}, {"axis": "z", "degrees": -90}],
+      "zeroedPosition": [0.59, 0.36, -0.279]
+    },
+    {
+      "zeroedRotations": [{"axis": "x", "degrees": -90}, {"axis": "y", "degrees": 0}, {"axis": "z", "degrees": 90}],
+      "zeroedPosition": [-0.004, -0.0835, 0.021]
+    },
+    {
+      "zeroedRotations": [{"axis": "x", "degrees": -90}, {"axis": "y", "degrees": 0}, {"axis": "z", "degrees": 90}],
+      "zeroedPosition": [-0.004, -0.0835, 0.021]
+    }
+  ]
+}

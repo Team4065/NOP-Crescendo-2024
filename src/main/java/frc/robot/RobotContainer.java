@@ -6,6 +6,7 @@ package frc.robot;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -27,16 +28,17 @@ import frc.robot.commands.swerve.SwerveControl;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
-import frc.robot.subsystems.limelight.Vision;
-import frc.robot.subsystems.limelight.VisionIO;
-import frc.robot.subsystems.limelight.VisionLimelight;
-import frc.robot.subsystems.limelight.VisionSimIO;
 import frc.robot.subsystems.swerve.GyroIO;
 import frc.robot.subsystems.swerve.GyroIONavX;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.subsystems.swerve.modules.ModuleIO;
 import frc.robot.subsystems.swerve.modules.ModuleIOSim;
 import frc.robot.subsystems.swerve.modules.ModuleIOTalonFX;
+import frc.robot.subsystems.vision.IndividualCam;
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionLimelight;
+import frc.robot.subsystems.vision.VisionSimIO;
 import frc.robot.util.AutoCommandBuilder;
 import frc.robot.util.PathFindingWithPath;
 
@@ -80,7 +82,10 @@ public class RobotContainer {
           new ModuleIOTalonFX(2),
           new ModuleIOTalonFX(3)
         );
-        m_vision = new Vision(new VisionLimelight("limelight-nop"));
+        m_vision = new Vision(
+          new VisionLimelight("limelight-nop2"),
+          new VisionLimelight("limelight-nop3")
+        );
         m_elevator = new Elevator(new ElevatorIO() {});
 
         break;
@@ -94,11 +99,18 @@ public class RobotContainer {
         );
         m_elevator = new Elevator(new ElevatorIOSim());
 
-        m_vision = new Vision(new VisionSimIO(
-          m_swerve::getPose,
-          new Transform3d(new Translation3d(-Units.inchesToMeters(13.014), 0, Units.inchesToMeters(20)), new Rotation3d(0, -Units.degreesToRadians(45), Units.degreesToRadians(180))),
-          "sim_cam_1"
-        ));
+        m_vision = new Vision(
+          new VisionSimIO(
+            m_swerve::getPose,
+            Constants.LimelightPositions.camPos2,
+            "sim_cam_BL"
+          ),
+          new VisionSimIO(
+            m_swerve::getPose,
+            Constants.LimelightPositions.camPos3,
+            "sim_cam_BR"
+          )
+        );
 
         break;
       default:
@@ -109,7 +121,12 @@ public class RobotContainer {
           new ModuleIO() {},
           new ModuleIO() {}
         );
-        m_vision = new Vision(new VisionIO() {});
+
+        m_vision = new Vision(
+          new VisionIO() {},
+          new VisionIO() {}
+        );
+
         m_elevator = new Elevator(new ElevatorIO() {});
 
         break;
@@ -139,7 +156,7 @@ public class RobotContainer {
     BB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Source Finisher 1", BB));
     XB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("AMP Finisher", XB));
 
-    YB.onTrue(new ResetOdo());
+    YB.onTrue(new InstantCommand(() -> {m_swerve.setPose(new Pose2d(4.4, 2.8, new Rotation2d(0)));}));
 
     rightButton.onTrue(new ReachState("in"));
     upButton.onTrue(new ReachState("amp"));

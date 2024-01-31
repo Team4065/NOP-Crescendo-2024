@@ -110,7 +110,19 @@ public class Elevator extends SubsystemBase {
     Pose3d basePose = new Pose3d(Units.inchesToMeters(-9.6), 0, Units.inchesToMeters(11), angleRot);
     var extensionPose = basePose.transformBy(new Transform3d(new Translation3d(getEleLength(), 0, 0), new Rotation3d()));
 
-    Logger.recordOutput("Elevator/Mechanism3d", basePose, extensionPose, new Pose3d(new Translation3d(-Units.inchesToMeters(13.014), 0, Units.inchesToMeters(20)), new Rotation3d(0, -Units.degreesToRadians(45), Units.degreesToRadians(180))));
+    // new Pose3d(new Translation3d(-Units.inchesToMeters(13.014), 0, Units.inchesToMeters(20)), new Rotation3d(0, -Units.degreesToRadians(45), Units.degreesToRadians(180))));
+    Logger.recordOutput("Elevator/Mechanism3d", 
+      basePose, 
+      extensionPose, 
+      new Pose3d(
+        new Translation3d(Constants.LimelightPositions.camPos3.getX(), Constants.LimelightPositions.camPos3.getY(), Constants.LimelightPositions.camPos3.getZ()), 
+        new Rotation3d(Constants.LimelightPositions.camPos3.getRotation().getX(), Constants.LimelightPositions.camPos3.getRotation().getY(), Constants.LimelightPositions.camPos3.getRotation().getZ())
+      ),
+      new Pose3d(
+        new Translation3d(Constants.LimelightPositions.camPos2.getX(), Constants.LimelightPositions.camPos2.getY(), Constants.LimelightPositions.camPos2.getZ()), 
+        new Rotation3d(Constants.LimelightPositions.camPos2.getRotation().getX(), Constants.LimelightPositions.camPos2.getRotation().getY(), Constants.LimelightPositions.camPos2.getRotation().getZ())
+      )
+    );
   }
 
   public void reachTarget(double angle, double extensionFeet) {
@@ -129,7 +141,7 @@ public class Elevator extends SubsystemBase {
 
         break;
       case "amp":
-        reachTarget(90, 1);
+        reachTarget(90, 1.425);
         
         break;
       default:

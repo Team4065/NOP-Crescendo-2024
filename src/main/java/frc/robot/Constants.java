@@ -6,7 +6,12 @@ package frc.robot;
 
 import java.util.HashMap;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -28,6 +33,8 @@ public final class Constants {
     SIM,
     REPLAY
   }
+
+  public static final AprilTagFieldLayout tagLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
 
   public static final Field2d displayField = new Field2d();
   public static final HashMap<Command, String> autoRoutines = new HashMap<>(); // HashMap to find the auto name based on what command is selected in SendableChooser
@@ -84,5 +91,13 @@ public final class Constants {
     public static final int encoderBChannel = 1;
 
     public static final double elevatorEncoderDistPerPulse = 2.0 * Math.PI * elevatorDrumRadius / 4096;
+  }
+
+  public static class LimelightPositions {
+    /*
+     * Final pos cam 1 - new Transform3d(new Translation3d(-Units.inchesToMeters(6), 0, Units.inchesToMeters(16)), new Rotation3d(0, -Units.degreesToRadians(25), Units.degreesToRadians(180)));
+    */
+    public static final Transform3d camPos3 = new Transform3d(new Translation3d(-Units.inchesToMeters(6), -Units.inchesToMeters(5), Units.inchesToMeters(16)), new Rotation3d(Units.degreesToRadians(0), -Units.degreesToRadians(25), Units.degreesToRadians(180 - 25)));
+    public static final Transform3d camPos2 = new Transform3d(new Translation3d(-Units.inchesToMeters(6), Units.inchesToMeters(5), Units.inchesToMeters(16)), new Rotation3d(-Units.degreesToRadians(0), -Units.degreesToRadians(25), Units.degreesToRadians(180 + 25)));
   }
 }

@@ -18,9 +18,11 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -232,9 +234,10 @@ public class Swerve extends SubsystemBase {
     return pose;
   }
 
+
   @AutoLogOutput(key = "Odometry/Robot3d")
   public Pose3d getPose3d() {
-    return new Pose3d(pose.getX(), pose.getY(), 0.3, new Rotation3d(0, 0, pose.getRotation().getRadians()));
+    return new Pose3d(pose.getX(), pose.getY(), Units.inchesToMeters(21), new Rotation3d(0, 0, pose.getRotation().getRadians()));
   }
 
   public SwerveDriveKinematics getKinematics() {
