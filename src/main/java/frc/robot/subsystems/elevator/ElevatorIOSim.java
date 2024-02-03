@@ -13,14 +13,22 @@ public class ElevatorIOSim implements ElevatorIO {
     DCMotorSim rightTiltMotor = new DCMotorSim(DCMotor.getFalcon500(1), 1, 0.025);
     DCMotorSim leftTiltMotor = new DCMotorSim(DCMotor.getFalcon500(1), 1, 0.025);
     DCMotorSim elevatorMotor = new DCMotorSim(DCMotor.getFalcon500(1), 1, 0.025);
-    Encoder encoder = new Encoder(Constants.ElevatorConstants.encoderAChannel, Constants.ElevatorConstants.encoderBChannel);
-    EncoderSim encoderSim = new EncoderSim(encoder);
+
+    Encoder extensionEncoder = new Encoder(Constants.ElevatorConstants.encoderAChannel, Constants.ElevatorConstants.encoderBChannel);
+    EncoderSim extensionEncoderSim = new EncoderSim(extensionEncoder);
+
+    Encoder tiltEncoder = new Encoder(Constants.ElevatorConstants.encoderCChannel, Constants.ElevatorConstants.encoderDChannel);
+    EncoderSim tiltEncoderSim = new EncoderSim(tiltEncoder);
 
     double appliedRightTiltMotorVolts = 0.0;
     double appliedLeftTiltMotorVolts = 0.0;
     double appliedElevatorMotorVolts = 0.0;
 
-    final Rotation2d turnAbsoluteInitPos = new Rotation2d(Math.random() * 2 * Math.PI);
+
+    public ElevatorIOSim() {
+        extensionEncoderSim.setDistancePerPulse(Constants.ElevatorConstants.elevatorEncoderDistPerPulse);
+        tiltEncoderSim.setDistancePerPulse(Constants.ElevatorConstants.tiltEncoderDistPerPulse);
+    }
 
     @Override
     public void updateInputs(ElevatorIOInputs inputs) {
@@ -38,9 +46,9 @@ public class ElevatorIOSim implements ElevatorIO {
         inputs.leftTiltAppliedVolts = appliedLeftTiltMotorVolts;
         inputs.leftTiltCurrentAmps = Math.abs(leftTiltMotor.getCurrentDrawAmps());
 
-        inputs.absoluteTiltPositionRad = new Rotation2d(rightTiltMotor.getAngularPositionRad()).plus(turnAbsoluteInitPos);
+        inputs.absoluteTiltPositionRad = new Rotation2d(tiltEncoderSim.getDistance());
 
-        inputs.elevatorEncoder = encoderSim.getDistance();
+        inputs.elevatorEncoder = extensionEncoderSim.getDistance();
         inputs.elevatorPositionRad = new Rotation2d(elevatorMotor.getAngularPositionRad());
         inputs.elevatorVelocityRadPerSec = elevatorMotor.getAngularVelocityRadPerSec();
         inputs.elevatorAppliedVolts = appliedElevatorMotorVolts;
@@ -64,11 +72,11 @@ public class ElevatorIOSim implements ElevatorIO {
     
     @Override 
     public void setDistanceSimEncoderInput(double distance) {
-        encoderSim.setDistance(distance);
+        extensionEncoderSim.setDistance(distance);
     }
 
     @Override
-    public void setConversionRateSimEncoder(double distanceRate) {
-        encoderSim.setDistancePerPulse(distanceRate);
+    public void setTiltSimEncoderInput(double angleRad) {
+        tiltEncoderSim.setDistance(angleRad); // 
     }
 }

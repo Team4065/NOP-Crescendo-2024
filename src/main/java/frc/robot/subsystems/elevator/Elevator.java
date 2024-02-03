@@ -12,6 +12,7 @@ import org.littletonrobotics.junction.inputs.LoggedDriverStation;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -27,6 +28,7 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.simulation.EncoderSim;
+import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
@@ -38,17 +40,16 @@ public class Elevator extends SubsystemBase {
   private ElevatorIO io;
   private ElevatorIOInputsAutoLogged elevatorInputs = new ElevatorIOInputsAutoLogged();
 
-  private ProfiledPIDController profiledPIDControl = new ProfiledPIDController(40, 0, 0, new TrapezoidProfile.Constraints(2.6, 2.6));
-  private ElevatorFeedforward m_feedforward = new ElevatorFeedforward(0.0, 0.762, 1, 0.0);
+  private final ProfiledPIDController extensionProfiledPIDControl;
+  private final ElevatorFeedforward extensionFeedforward;
 
-  private double tiltAngle;
+  private final PIDController tiltPIDControl;
 
   // Simulation only
-  private DCMotor elevatorMotor = DCMotor.getFalcon500(1);
   private ElevatorSim eleSim = new ElevatorSim(
-    elevatorMotor,
-    Constants.ElevatorConstants.gearRatio, 
-    Constants.ElevatorConstants.carriageMassKg, 
+    Constants.ElevatorConstants.extensionMotorSimGearbox,
+    Constants.ElevatorConstants.extensionGearRatio, 
+    Constants.ElevatorConstants.extensionCarriageMassKg, 
     Constants.ElevatorConstants.elevatorDrumRadius, 
     Constants.ElevatorConstants.minHeightMeters, 
     Constants.ElevatorConstants.maxHeightMeters, 
@@ -56,16 +57,56 @@ public class Elevator extends SubsystemBase {
     Constants.ElevatorConstants.minHeightMeters, 
     VecBuilder.fill(0.0)
   );
+
+  private SingleJointedArmSim armSim = new SingleJointedArmSim(
+    Constants.ElevatorConstants.tiltMotorSimGearbox,
+    Constants.ElevatorConstants.tiltGearRatio,
+    SingleJointedArmSim.estimateMOI(eleSim.getPositionMeters() + Constants.ElevatorConstants.fullyInExtension, Constants.ElevatorConstants.armMass),
+    eleSim.getPositionMeters(),
+    Constants.ElevatorConstants.minAngleRadians,
+    Constants.ElevatorConstants.maxAngleRadians,
+    false,
+    Units.degreesToRadians(10),
+    VecBuilder.fill(0.0)
+  );
   
   private final Mechanism2d m_mech2d = new Mechanism2d(3, 3);
   private final MechanismRoot2d m_mech2dRoot = m_mech2d.getRoot("Elevator Root", 1.2545, 0.3); 
-  private final MechanismLigament2d m_elevatorMech2d = m_mech2dRoot.append(new MechanismLigament2d("Elevator", eleSim.getPositionMeters(), 10));
+  private final MechanismLigament2d m_elevatorMech2d = m_mech2dRoot.append(new MechanismLigament2d("Elevator", eleSim.getPositionMeters(), Units.radiansToDegrees(armSim.getAngleRads())));
+
+  private double tiltAngleSetPointDeg;
 
   public Elevator(ElevatorIO io) {
     this.io = io;
-    if (Constants.currentMode == Constants.Mode.SIM) {
-      io.setConversionRateSimEncoder(Constants.ElevatorConstants.elevatorEncoderDistPerPulse);
-    } 
+
+    switch (Constants.currentMode) {
+      case REAL:
+        extensionProfiledPIDControl = new ProfiledPIDController(0, 0, 0, new TrapezoidProfile.Constraints(2.6, 2.6));
+        extensionFeedforward = new ElevatorFeedforward(0.0, 0.0, 0, 0.0);
+
+        tiltPIDControl = new PIDController(0, 0, 0);
+
+        break;
+      case SIM:
+        extensionProfiledPIDControl = new ProfiledPIDController(40, 0, 0, new TrapezoidProfile.Constraints(2.6, 2.6));
+        extensionFeedforward = new ElevatorFeedforward(0.0, 0.762, 1, 0.0);
+        tiltPIDControl = new PIDController(125, 0, 0);
+
+        break;
+      case REPLAY:
+        extensionProfiledPIDControl = new ProfiledPIDController(0, 0, 0, new TrapezoidProfile.Constraints(2.6, 2.6));
+        extensionFeedforward = new ElevatorFeedforward(0.0, 0.0, 0, 0.0);
+
+        tiltPIDControl = new PIDController(0, 0, 0);
+
+        break;
+      default:
+        extensionProfiledPIDControl = new ProfiledPIDController(0, 0, 0, new TrapezoidProfile.Constraints(2.6, 2.6));
+        extensionFeedforward = new ElevatorFeedforward(0.0, 0.0, 0, 0.0);
+
+        tiltPIDControl = new PIDController(0, 0, 0);
+        break;
+    }
 
     reachState("in");
   }
@@ -74,9 +115,15 @@ public class Elevator extends SubsystemBase {
   public void periodic() {
     io.updateInputs(elevatorInputs);
     Logger.processInputs("Elevator", elevatorInputs);
-    double feedback = profiledPIDControl.calculate(elevatorInputs.elevatorEncoder);
-    double feedforward = m_feedforward.calculate(profiledPIDControl.getSetpoint().velocity);
+
+    double feedback = extensionProfiledPIDControl.calculate(elevatorInputs.elevatorEncoder);
+    double feedforward = extensionFeedforward.calculate(extensionProfiledPIDControl.getSetpoint().velocity);
     io.setElevatorVoltage(feedback + feedforward);
+    // Units.degreesToRadians(tiltAngleSetPointDeg)
+
+    double pidOutput = tiltPIDControl.calculate(elevatorInputs.absoluteTiltPositionRad.getRadians(), Units.degreesToRadians(tiltAngleSetPointDeg));
+    io.setTiltVoltage(pidOutput);
+
     updateTelemetry();
   }
 
@@ -85,6 +132,23 @@ public class Elevator extends SubsystemBase {
     eleSim.setInputVoltage(elevatorInputs.elevatorAppliedVolts);
     eleSim.update(0.02);
     io.setDistanceSimEncoderInput(eleSim.getPositionMeters());
+
+
+    armSim = new SingleJointedArmSim(
+      Constants.ElevatorConstants.tiltMotorSimGearbox,
+      Constants.ElevatorConstants.tiltGearRatio,
+      SingleJointedArmSim.estimateMOI(eleSim.getPositionMeters() + Constants.ElevatorConstants.fullyInExtension, Constants.ElevatorConstants.armMass),
+      eleSim.getPositionMeters(),
+      Constants.ElevatorConstants.minAngleRadians,
+      Constants.ElevatorConstants.maxAngleRadians,
+      false,
+      elevatorInputs.absoluteTiltPositionRad.getRadians(),
+      VecBuilder.fill(0)
+    );
+
+    armSim.setInputVoltage(elevatorInputs.rightTiltAppliedVolts);
+    armSim.update(0.02);
+    io.setTiltSimEncoderInput(armSim.getAngleRads());
   }
 
   @AutoLogOutput(key = "Elevator/ConfigPose")
@@ -93,24 +157,22 @@ public class Elevator extends SubsystemBase {
   }
 
   public void reachExtension(double extensionFeet) {
-    profiledPIDControl.setGoal(Units.feetToMeters(extensionFeet));
+    extensionProfiledPIDControl.setGoal(Units.feetToMeters(extensionFeet));
   }
 
   public void setAngle(double angleToSet) {
-    tiltAngle = angleToSet;
+    tiltAngleSetPointDeg = angleToSet;
   }
 
   public void updateTelemetry() {
     // Update elevator visualization with position
-    m_elevatorMech2d.setAngle(tiltAngle);
+    m_elevatorMech2d.setAngle(Units.radiansToDegrees(armSim.getAngleRads()));
     m_elevatorMech2d.setLength(elevatorInputs.elevatorEncoder);
-    Rotation3d angleRot = new Rotation3d(0, Units.degreesToRadians(-tiltAngle), 0);
+    Rotation3d angleRot = new Rotation3d(0, -armSim.getAngleRads(), 0);
 
-    // Units.inchesToMeters(-2.5)
     Pose3d basePose = new Pose3d(Units.inchesToMeters(-9.6), 0, Units.inchesToMeters(11), angleRot);
     var extensionPose = basePose.transformBy(new Transform3d(new Translation3d(getEleLength(), 0, 0), new Rotation3d()));
 
-    // new Pose3d(new Translation3d(-Units.inchesToMeters(13.014), 0, Units.inchesToMeters(20)), new Rotation3d(0, -Units.degreesToRadians(45), Units.degreesToRadians(180))));
     Logger.recordOutput("Elevator/Mechanism3d", 
       basePose, 
       extensionPose, 
@@ -126,8 +188,8 @@ public class Elevator extends SubsystemBase {
   }
 
   public void reachTarget(double angle, double extensionFeet) {
-    profiledPIDControl.setGoal(Units.feetToMeters(extensionFeet));
-    tiltAngle = angle;
+    tiltAngleSetPointDeg = angle;
+    extensionProfiledPIDControl.setGoal(Units.feetToMeters(extensionFeet));
   }
 
   public void reachState(String state) {
@@ -157,12 +219,12 @@ public class Elevator extends SubsystemBase {
 
   @AutoLogOutput(key = "Elevator/ElevatorSetpoint")
   public double getExtensionGoal() {
-    return profiledPIDControl.getGoal().position;
+    return extensionProfiledPIDControl.getGoal().position;
   }
 
-  @AutoLogOutput(key = "Elevator/PIDError")
-  public double getError() {
-    return profiledPIDControl.getPositionError();
+  @AutoLogOutput(key = "Elevator/TiltSetpoint")
+  public double getTiltSetPoint() {
+    return Units.radiansToDegrees(Units.degreesToRadians(tiltPIDControl.getSetpoint()));
   }
 
   @AutoLogOutput(key = "Elevator/Mechanism2d")

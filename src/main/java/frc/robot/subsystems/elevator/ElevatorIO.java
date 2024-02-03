@@ -38,5 +38,5 @@ public interface ElevatorIO {
 
     public default void setDistanceSimEncoderInput(double distance) {}
 
-    public default void setConversionRateSimEncoder(double conversionRate) {}
+    public default void setTiltSimEncoderInput(double angle) {}
 }

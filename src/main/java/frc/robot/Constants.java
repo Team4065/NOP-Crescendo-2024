@@ -77,27 +77,30 @@ public final class Constants {
   }
 
   public static class ElevatorConstants {
-    public static final DCMotor simGearbox = DCMotor.getFalcon500(1);
-    public static final double gearRatio = 10.0;
-    public static final double carriageMassKg = 4;
+    public static final DCMotor extensionMotorSimGearbox = DCMotor.getFalcon500(2);
+    public static final double extensionGearRatio = 10.0;
+    public static final double extensionCarriageMassKg = 4;
     public static final double elevatorDrumRadius = Units.inchesToMeters(2.0);
     public static final double fullyInExtension = Units.inchesToMeters(27);
     public static final double minHeightMeters = 0;
     public static final double maxHeightMeters = Units.feetToMeters(1.75);
-
     public static final int extenstionMotorID = 13;
-
     public static final int encoderAChannel = 0;
     public static final int encoderBChannel = 1;
-
     public static final double elevatorEncoderDistPerPulse = 2.0 * Math.PI * elevatorDrumRadius / 4096;
+
+    public static final DCMotor tiltMotorSimGearbox = DCMotor.getFalcon500(1);
+    public static final double tiltGearRatio = 165;
+    public static final double armMass = 8.61826;
+    public static final double minAngleRadians = Units.degreesToRadians(-10);
+    public static final double maxAngleRadians = Units.degreesToRadians(90);
+    public static int encoderCChannel = 3;
+    public static int encoderDChannel = 4;
+    public static final double tiltEncoderDistPerPulse = 2.0 * Math.PI / 4096;
   }
 
   public static class LimelightPositions {
-    /*
-     * Final pos cam 1 - new Transform3d(new Translation3d(-Units.inchesToMeters(6), 0, Units.inchesToMeters(16)), new Rotation3d(0, -Units.degreesToRadians(25), Units.degreesToRadians(180)));
-    */
-    public static final Transform3d camPos3 = new Transform3d(new Translation3d(-Units.inchesToMeters(6), -Units.inchesToMeters(5), Units.inchesToMeters(16)), new Rotation3d(Units.degreesToRadians(0), -Units.degreesToRadians(25), Units.degreesToRadians(180 - 25)));
-    public static final Transform3d camPos2 = new Transform3d(new Translation3d(-Units.inchesToMeters(6), Units.inchesToMeters(5), Units.inchesToMeters(16)), new Rotation3d(-Units.degreesToRadians(0), -Units.degreesToRadians(25), Units.degreesToRadians(180 + 25)));
+    public static final Transform3d camPos3 = new Transform3d(new Translation3d(-Units.inchesToMeters(5), -Units.inchesToMeters(5), Units.inchesToMeters(16)), new Rotation3d(Units.degreesToRadians(0), -Units.degreesToRadians(25), Units.degreesToRadians(180 - 25)));
+    public static final Transform3d camPos2 = new Transform3d(new Translation3d(-Units.inchesToMeters(5), Units.inchesToMeters(5), Units.inchesToMeters(16)), new Rotation3d(-Units.degreesToRadians(0), -Units.degreesToRadians(25), Units.degreesToRadians(180 + 25)));
   }
 }
