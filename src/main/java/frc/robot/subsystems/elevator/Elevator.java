@@ -8,7 +8,6 @@ package frc.robot.subsystems.elevator;
 import org.littletonrobotics.junction.AutoLog;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.inputs.LoggedDriverStation;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
@@ -18,16 +17,9 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
-import edu.wpi.first.wpilibj.simulation.EncoderSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
@@ -76,6 +68,19 @@ public class Elevator extends SubsystemBase {
 
   private double tiltAngleSetPointDeg;
 
+  /* 
+    Variables used for "thresholding" 
+      For example the arm is at 90 degrees and is fully extended, 
+      we want the arm to go down a certain point then start tilting back.
+    Maintains the COG
+  */
+  private boolean extensionThresholdEnabled = false;
+  private double extensionThreshold;
+
+  String activationLevel;
+  
+  String currentState = "in";
+
   public Elevator(ElevatorIO io) {
     this.io = io;
 
@@ -118,12 +123,24 @@ public class Elevator extends SubsystemBase {
 
     double feedback = extensionProfiledPIDControl.calculate(elevatorInputs.elevatorEncoder);
     double feedforward = extensionFeedforward.calculate(extensionProfiledPIDControl.getSetpoint().velocity);
+
     io.setElevatorVoltage(feedback + feedforward);
-    // Units.degreesToRadians(tiltAngleSetPointDeg)
-
-    double pidOutput = tiltPIDControl.calculate(elevatorInputs.absoluteTiltPositionRad.getRadians(), Units.degreesToRadians(tiltAngleSetPointDeg));
-    io.setTiltVoltage(pidOutput);
-
+    
+    
+    if (extensionThresholdEnabled) {
+      try {
+        if (activate(activationLevel, extensionThreshold, elevatorInputs.elevatorEncoder)) {
+          double pidOutput = tiltPIDControl.calculate(elevatorInputs.absoluteTiltPositionRad.getRadians(), Units.degreesToRadians(tiltAngleSetPointDeg));
+          io.setTiltVoltage(pidOutput);
+        }
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    } else {
+      double pidOutput = tiltPIDControl.calculate(elevatorInputs.absoluteTiltPositionRad.getRadians(), Units.degreesToRadians(tiltAngleSetPointDeg));
+      io.setTiltVoltage(pidOutput);
+    }
+    
     updateTelemetry();
   }
 
@@ -151,10 +168,21 @@ public class Elevator extends SubsystemBase {
     io.setTiltSimEncoderInput(armSim.getAngleRads());
   }
 
-  @AutoLogOutput(key = "Elevator/ConfigPose")
+  public boolean activate(String thresholdType, double thresholdValue, double sensorValue) throws Exception {
+    switch (thresholdType) {
+      case "above":
+        return sensorValue > thresholdValue;        
+      case "below":
+        return sensorValue < thresholdValue;
+      default:
+        throw new Exception("INVALID LEVEL!");
+    }
+  }
+
+  /* @AutoLogOutput(key = "Elevator/ConfigPose")
   public Pose3d blankPose() {
     return new Pose3d();
-  }
+  } */
 
   public void reachExtension(double extensionFeet) {
     extensionProfiledPIDControl.setGoal(Units.feetToMeters(extensionFeet));
@@ -195,15 +223,31 @@ public class Elevator extends SubsystemBase {
   public void reachState(String state) {
     switch (state) {
       case "in":
+        extensionThresholdEnabled = false;
         reachTarget(10, 0);
- 
+        currentState = "in";
+
         break;
       case "intake":
-        reachTarget(-4, 0.6);
+        extensionThresholdEnabled = false;
+
+        if (currentState == "in") {
+          activationLevel = "above";
+          extensionThreshold = 0.19;
+        } else {
+          activationLevel = "below";
+          extensionThreshold = 0.2;
+        }
+        
+        extensionThresholdEnabled = true;
+        reachTarget(-4, 0.6);  
+        currentState = "intake";
 
         break;
       case "amp":
-        reachTarget(90, 1.425);
+        extensionThresholdEnabled = false;
+        reachTarget(90, 1);
+        currentState = "amp";
         
         break;
       default:
@@ -225,6 +269,16 @@ public class Elevator extends SubsystemBase {
   @AutoLogOutput(key = "Elevator/TiltSetpoint")
   public double getTiltSetPoint() {
     return Units.radiansToDegrees(Units.degreesToRadians(tiltPIDControl.getSetpoint()));
+  }
+
+  @AutoLogOutput(key = "Elevator/ExtensionError")
+  public double getErrorExtension() {
+    return Math.abs(extensionProfiledPIDControl.getPositionError());
+  }
+
+  @AutoLogOutput(key = "Elevator/TiltError")
+  public double getErrorTilt() {
+    return Math.abs(tiltPIDControl.getPositionError());
   }
 
   @AutoLogOutput(key = "Elevator/Mechanism2d")
