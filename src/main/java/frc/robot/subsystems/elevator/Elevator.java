@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.lang.Math; 
 import frc.robot.Constants;
+import frc.robot.subsystems.vision.IndividualCam;
 
 public class Elevator extends SubsystemBase {
   private ElevatorIO io;
@@ -179,11 +180,6 @@ public class Elevator extends SubsystemBase {
     }
   }
 
-  /* @AutoLogOutput(key = "Elevator/ConfigPose")
-  public Pose3d blankPose() {
-    return new Pose3d();
-  } */
-
   public void reachExtension(double extensionFeet) {
     extensionProfiledPIDControl.setGoal(Units.feetToMeters(extensionFeet));
   }
@@ -196,25 +192,20 @@ public class Elevator extends SubsystemBase {
     // Update elevator visualization with position
     m_elevatorMech2d.setAngle(Units.radiansToDegrees(armSim.getAngleRads()));
     m_elevatorMech2d.setLength(elevatorInputs.elevatorEncoder);
-    Rotation3d angleRot = new Rotation3d(0, -armSim.getAngleRads(), 0);
-
-    Pose3d basePose = new Pose3d(Units.inchesToMeters(-9.6), 0, Units.inchesToMeters(11), angleRot);
-    var extensionPose = basePose.transformBy(new Transform3d(new Translation3d(getEleLength(), 0, 0), new Rotation3d()));
-
-    Logger.recordOutput("Elevator/Mechanism3d", 
-      basePose, 
-      extensionPose, 
-      new Pose3d(
-        new Translation3d(Constants.LimelightPositions.camPos3.getX(), Constants.LimelightPositions.camPos3.getY(), Constants.LimelightPositions.camPos3.getZ()), 
-        new Rotation3d(Constants.LimelightPositions.camPos3.getRotation().getX(), Constants.LimelightPositions.camPos3.getRotation().getY(), Constants.LimelightPositions.camPos3.getRotation().getZ())
-      ),
-      new Pose3d(
-        new Translation3d(Constants.LimelightPositions.camPos2.getX(), Constants.LimelightPositions.camPos2.getY(), Constants.LimelightPositions.camPos2.getZ()), 
-        new Rotation3d(Constants.LimelightPositions.camPos2.getRotation().getX(), Constants.LimelightPositions.camPos2.getRotation().getY(), Constants.LimelightPositions.camPos2.getRotation().getZ())
-      )
-    );
   }
+  
+  public Pose3d[] getPoses3d() {
+    Rotation3d angleRot = new Rotation3d(0, -armSim.getAngleRads(), 0);
+    Pose3d basePose = new Pose3d(Units.inchesToMeters(-9.6), 0, Units.inchesToMeters(11), angleRot);
+    Pose3d extensionPose = basePose.transformBy(new Transform3d(new Translation3d(getEleLength(), 0, 0), new Rotation3d()));
 
+    Pose3d[] posesToReturn = new Pose3d[2];
+    posesToReturn[0] = basePose;
+    posesToReturn[1] = extensionPose;
+
+    return posesToReturn;
+  }
+  
   public void reachTarget(double angle, double extensionFeet) {
     tiltAngleSetPointDeg = angle;
     extensionProfiledPIDControl.setGoal(Units.feetToMeters(extensionFeet));

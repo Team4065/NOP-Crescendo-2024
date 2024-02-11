@@ -100,7 +100,23 @@ public final class Constants {
   }
 
   public static class LimelightPositions {
-    public static final Transform3d camPos3 = new Transform3d(new Translation3d(-Units.inchesToMeters(5), -Units.inchesToMeters(5), Units.inchesToMeters(16)), new Rotation3d(Units.degreesToRadians(0), -Units.degreesToRadians(25), Units.degreesToRadians(180 - 25)));
-    public static final Transform3d camPos2 = new Transform3d(new Translation3d(-Units.inchesToMeters(5), Units.inchesToMeters(5), Units.inchesToMeters(16)), new Rotation3d(-Units.degreesToRadians(0), -Units.degreesToRadians(25), Units.degreesToRadians(180 + 25)));
+    public static final Transform3d camPosBR = new Transform3d(new Translation3d(-Units.inchesToMeters(4.5), -Units.inchesToMeters(12), Units.inchesToMeters(15)), new Rotation3d(Units.degreesToRadians(0), -Units.degreesToRadians(25), Units.degreesToRadians(180 - 35)));
+    public static final Transform3d camPosBL = new Transform3d(new Translation3d(-Units.inchesToMeters(4.5), Units.inchesToMeters(12), Units.inchesToMeters(15)), new Rotation3d(-Units.degreesToRadians(0), -Units.degreesToRadians(25), Units.degreesToRadians(180 + 35)));
+    public static final Transform3d camPosNoteCamR = new Transform3d(
+      new Translation3d(
+        Units.inchesToMeters(10),
+        -Units.inchesToMeters(11.5),
+        Units.inchesToMeters(8)
+      ),
+      new Rotation3d(0, -Units.degreesToRadians(10), Units.degreesToRadians(15))
+    );
+    public static final Transform3d camPosNoteCamL = new Transform3d(
+      new Translation3d(
+        Units.inchesToMeters(10),
+        Units.inchesToMeters(11.5),
+        Units.inchesToMeters(8)
+      ),
+      new Rotation3d(0, -Units.degreesToRadians(10), -Units.degreesToRadians(15))
+    );
   }
 }

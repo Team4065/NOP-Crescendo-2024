@@ -6,8 +6,12 @@ package frc.robot;
 
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
@@ -109,7 +113,24 @@ public class Robot extends LoggedRobot {
     // commands, running already-scheduled commands, removing finished or interrupted commands,
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
+
+    // FOR CONFIGURATION OF CUSTOM ASSETS
+    
+    Logger.recordOutput("CONFIG POSE", new Pose3d());
+
     CommandScheduler.getInstance().run();
+
+    Pose3d[] elevatorPoses = RobotContainer.m_elevator.getPoses3d();
+    Pose3d[] cameraPoses = RobotContainer.m_vision.cameraPoses();
+
+    Logger.recordOutput("Mechanism3d", 
+      elevatorPoses[0], 
+      elevatorPoses[1], 
+      cameraPoses[0], 
+      cameraPoses[1],
+      cameraPoses[2],
+      cameraPoses[3]
+    );
   }
 
   /** This function is called once each time the robot enters Disabled mode. */

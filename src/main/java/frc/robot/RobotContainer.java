@@ -40,6 +40,7 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionLimelight;
 import frc.robot.subsystems.vision.VisionSimIO;
 import frc.robot.util.AutoCommandBuilder;
+import frc.robot.util.NoteVisualizer;
 import frc.robot.util.PathFindingWithPath;
 
 import java.util.HashMap;
@@ -69,6 +70,8 @@ public class RobotContainer {
   public static LoggedDashboardChooser<Command> m_chooser = new LoggedDashboardChooser<>("Auto Chooser");
 
   public static Command noAutoCommand = new InstantCommand();
+
+  public static NoteVisualizer noteVis = new NoteVisualizer();
 
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -102,12 +105,12 @@ public class RobotContainer {
         m_vision = new Vision(
           new VisionSimIO(
             m_swerve::getPose,
-            Constants.LimelightPositions.camPos2,
+            Constants.LimelightPositions.camPosBL,
             "sim_cam_BL"
           ),
           new VisionSimIO(
             m_swerve::getPose,
-            Constants.LimelightPositions.camPos3,
+            Constants.LimelightPositions.camPosBR,
             "sim_cam_BR"
           )
         );
@@ -131,6 +134,8 @@ public class RobotContainer {
 
         break;
     }
+
+    NoteVisualizer.setRobotPoseSupplier(() -> RobotContainer.m_swerve.getPose());
 
     NamedCommands.registerCommand("deploy", new ReachState("intake"));
     NamedCommands.registerCommand("retract", new ReachState("in"));
@@ -156,11 +161,12 @@ public class RobotContainer {
     BB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Source Finisher 1", BB));
     XB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("AMP Finisher", XB));
 
-    YB.onTrue(new InstantCommand(() -> {m_swerve.setPose(new Pose2d(4.4, 2.8, new Rotation2d(0)));}));
+    YB.onTrue(new InstantCommand(() -> {m_swerve.setPose(new Pose2d(0, 0, new Rotation2d(0)));}));
 
     rightButton.onTrue(new ReachState("in"));
     upButton.onTrue(new ReachState("amp"));
     downButton.onTrue(new ReachState("intake"));
+    leftButton.onTrue(NoteVisualizer.shoot());
 
   }
 
