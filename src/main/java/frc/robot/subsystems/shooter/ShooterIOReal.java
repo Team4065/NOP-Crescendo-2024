@@ -84,7 +84,7 @@ public class ShooterIOReal implements ShooterIO {
         inputs.intakeVelocityRadPerSec = intakeMotor.getEncoder().getVelocity();
         inputs.intakeAppliedVolts = intakeMotor.getVoltageCompensationNominalVoltage();
         inputs.intakeCurrentAmps = intakeMotor.getOutputCurrent();
-        inputs.beamBreak = !(beamBreak.get());
+        inputs.beamBreak = beamBreak.get();
     }
 
     @Override

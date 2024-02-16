@@ -19,6 +19,9 @@ import frc.robot.commands.elevator.ReachState;
 import frc.robot.commands.shooter.SetIntakeSpeed;
 import frc.robot.commands.shooter.SetShooterSpeed;
 import frc.robot.commands.swerve.SwerveControl;
+import frc.robot.subsystems.climber.Climber;
+import frc.robot.subsystems.climber.ClimberIO;
+import frc.robot.subsystems.climber.ClimberIOReal;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
@@ -48,6 +51,7 @@ public class RobotContainer {
   public static Vision m_vision;
   public static Elevator m_elevator;
   public static Shooter m_shooter;
+  public static Climber m_climber;
 
   public static PowerDistribution pdh;
 
@@ -90,7 +94,13 @@ public class RobotContainer {
           new ShooterIOReal()
         );
 
-        m_elevator = new Elevator(new ElevatorIOTalonFX());
+        m_elevator = new Elevator(
+          new ElevatorIOTalonFX()
+        );
+
+        m_climber = new Climber(
+          new ClimberIOReal()
+        );
 
         pdh = new PowerDistribution(Constants.pdhCANID, ModuleType.kRev);
         pdh.setSwitchableChannel(true);
@@ -120,6 +130,8 @@ public class RobotContainer {
         );
 
         m_shooter = new Shooter(new ShooterIO() {});
+        
+        m_climber = new Climber(new ClimberIO() {});
 
         break;
       default:
@@ -139,6 +151,9 @@ public class RobotContainer {
         m_elevator = new Elevator(new ElevatorIO() {});
 
         m_shooter = new Shooter(new ShooterIO() {});
+        
+        m_climber = new Climber(new ClimberIO() {});
+
 
         break;
     }
@@ -165,9 +180,9 @@ public class RobotContainer {
 
     
 
-    AB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Stage Middle Finisher", AB));
+    /* AB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Stage Middle Finisher", AB));
     BB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Source Finisher 1", BB));
-    XB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("AMP Finisher", XB));
+    XB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("AMP Finisher", XB)); */
 
     YB.onTrue(new InstantCommand(() -> {m_swerve.setPose(new Pose2d(0, 0, new Rotation2d(0)));}));
 

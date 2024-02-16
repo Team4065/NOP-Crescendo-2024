@@ -28,6 +28,7 @@ public class SetShooterSpeed extends Command {
   @Override
   public void execute() {
     RobotContainer.m_shooter.setShooterVoltage(speed);
+    RobotContainer.m_shooter.setIntakeVoltage(speed * 0.75);
     end = true;
   }
 

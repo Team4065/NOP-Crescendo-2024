@@ -4,24 +4,16 @@
 
 package frc.robot;
 
-import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.util.LocalADStarAK;
@@ -29,20 +21,15 @@ import frc.robot.util.LocalADStarAK;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggedDriverStation;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
-import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import com.pathplanner.lib.commands.PathPlannerAuto;
-import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathPlannerPath;
-import com.pathplanner.lib.path.PathPlannerTrajectory;
 import com.pathplanner.lib.path.PathPoint;
-import com.pathplanner.lib.path.PathPlannerTrajectory.State;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 
 /**
@@ -160,8 +147,6 @@ public class Robot extends LoggedRobot {
       int pathsInAuto = PathPlannerAuto.getPathGroupFromAutoFile(Constants.autoRoutines.get(RobotContainer.m_chooser.get())).size();
       List<Pose2d> posesOnTrajectory = new ArrayList<>();
 
-     
-
       for (int i = 0; i < pathsInAuto; i++) {
           PathPlannerPath currentPath = PathPlannerAuto.getPathGroupFromAutoFile(Constants.autoRoutines.get(RobotContainer.m_chooser.get())).get(i);
           List<PathPoint> pathPoints = currentPath.getAllPathPoints();
@@ -169,8 +154,6 @@ public class Robot extends LoggedRobot {
           posesOnTrajectory.add(j, new Pose2d(pathPoints.get(j).position, new Rotation2d(0)));
         }
       }
-
-      
 
       finalTrajectoryToDisplay = TrajectoryGenerator.generateTrajectory(posesOnTrajectory, new TrajectoryConfig(Units.metersToFeet(Constants.SwerveConstants.MAX_SPEED_FEET), Units.metersToFeet(Constants.SwerveConstants.MAX_SPEED_FEET)));
 

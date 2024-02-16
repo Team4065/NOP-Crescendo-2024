@@ -27,7 +27,9 @@ public class SetIntakeSpeed extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    RobotContainer.m_shooter.setIntakeVoltage(speed);
+    if (RobotContainer.m_shooter.getBeamBreak()) {
+      RobotContainer.m_shooter.setIntakeVoltage(speed);
+    }
     end = true;
   }
 

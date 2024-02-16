@@ -116,6 +116,15 @@ public final class Constants {
     public static final int beamBreakDIO = 0;
   }
 
+  public static class ClimberConstants {
+    public static final int rightTelescopeCANID = 20;
+    public static final int leftTelescopeCANID = 15;
+
+    public static final int pcmCANID = 27;
+    public static final int rightRatchetPort = 0;
+    public static final int leftRatchetPort = 0;
+  }
+
   public static class LimelightPositions {
     public static final Transform3d camPosBR = new Transform3d(new Translation3d(-Units.inchesToMeters(4.5), -Units.inchesToMeters(12), Units.inchesToMeters(15)), new Rotation3d(Units.degreesToRadians(0), -Units.degreesToRadians(25), Units.degreesToRadians(180 - 35)));
     public static final Transform3d camPosBL = new Transform3d(new Translation3d(-Units.inchesToMeters(4.5), Units.inchesToMeters(12), Units.inchesToMeters(15)), new Rotation3d(-Units.degreesToRadians(0), -Units.degreesToRadians(25), Units.degreesToRadians(180 + 35)));

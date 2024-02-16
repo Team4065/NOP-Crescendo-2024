@@ -22,10 +22,6 @@ public class Shooter extends SubsystemBase {
   public void periodic() {
     io.updateInputs(shooterInputs);
     Logger.processInputs("Shooter", shooterInputs);
-
-    if (!shooterInputs.beamBreak) {
-      io.setIntakeVoltage(0);
-    }
   }
 
   public void setShooterVoltage(double volts) {
@@ -34,5 +30,9 @@ public class Shooter extends SubsystemBase {
 
   public void setIntakeVoltage(double volts) {
     io.setIntakeVoltage(volts);
+  }
+
+  public boolean getBeamBreak() {
+    return shooterInputs.beamBreak;
   }
 }
