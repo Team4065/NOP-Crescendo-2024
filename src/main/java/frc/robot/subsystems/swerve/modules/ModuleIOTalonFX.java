@@ -72,27 +72,27 @@ public class ModuleIOTalonFX implements ModuleIO {
   public ModuleIOTalonFX(int index) {
     switch (index) {
       case 0:
-        driveTalon = new TalonFX(Constants.SwerveConstants.ModuleConstants.frontLeftDriveID);
-        turnTalon = new TalonFX(Constants.SwerveConstants.ModuleConstants.frontLeftTurnID);
-        cancoder = new CANcoder(Constants.SwerveConstants.ModuleConstants.frontLeftCanCoderID);
+        driveTalon = new TalonFX(Constants.SwerveConstants.ModuleConstants.frontLeftDriveID, "*");
+        turnTalon = new TalonFX(Constants.SwerveConstants.ModuleConstants.frontLeftTurnID, "*");
+        cancoder = new CANcoder(Constants.SwerveConstants.ModuleConstants.frontLeftCanCoderID, "*");
         absoluteEncoderOffset = Constants.SwerveConstants.ModuleConstants.frontLeftEncoderOffset; // MUST BE CALIBRATED
         break;
       case 1:
-        driveTalon = new TalonFX(Constants.SwerveConstants.ModuleConstants.frontRightDriveID);
-        turnTalon = new TalonFX(Constants.SwerveConstants.ModuleConstants.frontRightTurnID);
-        cancoder = new CANcoder(Constants.SwerveConstants.ModuleConstants.frontRightCanCoderID);
+        driveTalon = new TalonFX(Constants.SwerveConstants.ModuleConstants.frontRightDriveID, "*");
+        turnTalon = new TalonFX(Constants.SwerveConstants.ModuleConstants.frontRightTurnID, "*");
+        cancoder = new CANcoder(Constants.SwerveConstants.ModuleConstants.frontRightCanCoderID, "*");
         absoluteEncoderOffset = Constants.SwerveConstants.ModuleConstants.frontRightEncoderOffset; // MUST BE CALIBRATED
         break;
       case 2:
-        driveTalon = new TalonFX(Constants.SwerveConstants.ModuleConstants.backLeftDriveID);
-        turnTalon = new TalonFX(Constants.SwerveConstants.ModuleConstants.backLeftTurnID);
-        cancoder = new CANcoder(Constants.SwerveConstants.ModuleConstants.backLeftCanCoderID);
+        driveTalon = new TalonFX(Constants.SwerveConstants.ModuleConstants.backLeftDriveID, "*");
+        turnTalon = new TalonFX(Constants.SwerveConstants.ModuleConstants.backLeftTurnID, "*");
+        cancoder = new CANcoder(Constants.SwerveConstants.ModuleConstants.backLeftCanCoderID, "*");
         absoluteEncoderOffset = Constants.SwerveConstants.ModuleConstants.backLeftEncoderOffset; // MUST BE CALIBRATED
         break;
       case 3:
-        driveTalon = new TalonFX(Constants.SwerveConstants.ModuleConstants.backRightDriveID);
-        turnTalon = new TalonFX(Constants.SwerveConstants.ModuleConstants.backRightTurnID);
-        cancoder = new CANcoder(Constants.SwerveConstants.ModuleConstants.backRightCanCoderID);
+        driveTalon = new TalonFX(Constants.SwerveConstants.ModuleConstants.backRightDriveID, "*");
+        turnTalon = new TalonFX(Constants.SwerveConstants.ModuleConstants.backRightTurnID, "*");
+        cancoder = new CANcoder(Constants.SwerveConstants.ModuleConstants.backRightCanCoderID, "*");
         absoluteEncoderOffset = Constants.SwerveConstants.ModuleConstants.backRightEncoderOffset; // MUST BE CALIBRATED
         break;
       default:
@@ -100,7 +100,7 @@ public class ModuleIOTalonFX implements ModuleIO {
     }
 
     var driveConfig = new TalonFXConfiguration();
-    driveConfig.CurrentLimits.StatorCurrentLimit = 40.0;
+    driveConfig.CurrentLimits.StatorCurrentLimit = 60.0;
     driveConfig.CurrentLimits.StatorCurrentLimitEnable = true;
     driveTalon.getConfigurator().apply(driveConfig);
 
@@ -126,7 +126,7 @@ public class ModuleIOTalonFX implements ModuleIO {
     turnCurrent = turnTalon.getStatorCurrent();
 
     BaseStatusSignal.setUpdateFrequencyForAll(
-        100.0, drivePosition, turnPosition); // Required for odometry, use faster rate
+        250.0, drivePosition, turnPosition); // Required for odometry, use faster rate
     BaseStatusSignal.setUpdateFrequencyForAll(
         50.0,
         driveVelocity,
@@ -174,7 +174,6 @@ public class ModuleIOTalonFX implements ModuleIO {
   @Override
   public void setDriveVoltage(double volts) {
     driveTalon.setControl(new VoltageOut(volts));
-    driveTalon.setControl(new DutyCycleOut(1));
   }
 
   @Override

@@ -20,6 +20,7 @@ import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -49,8 +50,8 @@ import com.pathplanner.lib.util.ReplanningConfig;
 public class Swerve extends SubsystemBase {
 
   static final double max_drive_speed = Units.feetToMeters(Constants.SwerveConstants.MAX_SPEED_FEET);
-  static final double track_width_x = Units.inchesToMeters(30);
-  static final double track_width_y = Units.inchesToMeters(30);
+  static final double track_width_x = Units.inchesToMeters(28);
+  static final double track_width_y = Units.inchesToMeters(28);
   static final double drivetrain_radius = Math.hypot(track_width_x / 2, track_width_y / 2);
   static final double max_angular_speed = max_drive_speed / drivetrain_radius;
 

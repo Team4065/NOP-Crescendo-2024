@@ -26,13 +26,15 @@ import edu.wpi.first.wpilibj2.command.Command;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-  public static final Mode currentMode = Mode.SIM;
+  public static final Mode currentMode = Mode.REAL;
 
   public static enum Mode {
     REAL,
     SIM,
     REPLAY
   }
+
+  public static final int pdhCANID = 18;
 
   public static final AprilTagFieldLayout tagLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
 
@@ -47,32 +49,33 @@ public final class Constants {
 
     public static final double wheel_radius_meters = Units.inchesToMeters(4);
 
-    public static final double MAX_SPEED_FEET = 13.7;
+    public static final double MAX_SPEED_FEET = 10
+    ;
 
     public static class ModuleConstants {
       // FRONT LEFT
-      public static final int frontLeftDriveID = 10;
-      public static final int frontLeftTurnID = 11;
-      public static final int frontLeftCanCoderID = 12;
-      public static final Rotation2d frontLeftEncoderOffset = new Rotation2d(-1.8791264651599104);
+      public static final int frontLeftDriveID = 4;
+      public static final int frontLeftTurnID = 5;
+      public static final int frontLeftCanCoderID = 6;
+      public static final Rotation2d frontLeftEncoderOffset = new Rotation2d(-2.141437179888355);
 
       // FRONT RIGHT
-      public static final int frontRightDriveID = 7;
-      public static final int frontRightTurnID = 8;
-      public static final int frontRightCanCoderID = 9;
-      public static final Rotation2d frontRightEncoderOffset =  new Rotation2d(3.1391382843291757 + 2.8035032879397983);
+      public static final int frontRightDriveID = 1;
+      public static final int frontRightTurnID = 2;
+      public static final int frontRightCanCoderID = 3;
+      public static final Rotation2d frontRightEncoderOffset =  new Rotation2d(-1.5033011721279284);
 
       // BACK LEFT
-      public static final int backLeftDriveID = 4;
-      public static final int backLeftTurnID = 5;
-      public static final int backLeftCanCoderID = 6;
-      public static final Rotation2d backLeftEncoderOffset = new Rotation2d(2.5494760694659355);
+      public static final int backLeftDriveID = 7;
+      public static final int backLeftTurnID = 8;
+      public static final int backLeftCanCoderID = 9;
+      public static final Rotation2d backLeftEncoderOffset = new Rotation2d(-0.3512816004258118);
 
       // BACK RIGHT
-      public static final int backRightDriveID = 1;
-      public static final int backRightTurnID = 2;
-      public static final int backRightCanCoderID = 3;
-      public static final Rotation2d backRightEncoderOffset =  new Rotation2d(0.16260196351587786);
+      public static final int backRightDriveID = 10;
+      public static final int backRightTurnID = 11;
+      public static final int backRightCanCoderID = 12;
+      public static final Rotation2d backRightEncoderOffset =  new Rotation2d(-1.9220779272207087);
     }
   }
 
@@ -87,7 +90,7 @@ public final class Constants {
     public static final int extenstionMotorID = 13;
     public static final int encoderAChannel = 0;
     public static final int encoderBChannel = 1;
-    public static final double elevatorEncoderDistPerPulse = 2.0 * Math.PI * elevatorDrumRadius / 4096;
+    public static final double elevatorEncoderDistPerPulse = 2.0 * Math.PI * elevatorDrumRadius / 1024;
 
     public static final DCMotor tiltMotorSimGearbox = DCMotor.getFalcon500(1);
     public static final double tiltGearRatio = 165;
@@ -96,7 +99,21 @@ public final class Constants {
     public static final double maxAngleRadians = Units.degreesToRadians(90);
     public static int encoderCChannel = 3;
     public static int encoderDChannel = 4;
-    public static final double tiltEncoderDistPerPulse = 2.0 * Math.PI / 4096;
+    public static final double tiltEncoderDistPerPulse = 2.0 * Math.PI / 1024;
+
+    public static final int rightTiltMotorCANID = 13;
+    public static final int leftTiltMotorCANID = 14;
+    public static final int extensionMotorCANID = 21;
+
+    public static final int absoluteEncoderDIO = 8;
+  }
+
+  public static class ShooterConstants {
+    public static final int topRollerCANID = 22;
+    public static final int bottomRollerCANID = 16;
+
+    public static final int intakeMotorCANID = 18;
+    public static final int beamBreakDIO = 0;
   }
 
   public static class LimelightPositions {

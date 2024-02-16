@@ -18,12 +18,14 @@ public interface ElevatorIO {
         public double leftTiltCurrentAmps = 0.0;
 
         public Rotation2d absoluteTiltPositionRad = new Rotation2d();
+        public double absoluteDeg = 0.0;
 
         public double elevatorEncoder = 0;
         public Rotation2d elevatorPositionRad = new Rotation2d();
         public double elevatorVelocityRadPerSec = 0.0;
         public double elevatorAppliedVolts = 0.0;
         public double elevatorCurrentAmps = 0.0;
+        public boolean elevatorLimitReached = false;
     }
 
     public default void updateInputs(ElevatorIOInputs inputs) {}
@@ -35,6 +37,8 @@ public interface ElevatorIO {
     public default void setTiltBrakeMode(boolean enable) {}
 
     public default void setElevatorBrakeMode(boolean enable) {}
+
+    public default void setExtensionEncoderValue(double val) {}
 
     public default void setDistanceSimEncoderInput(double distance) {}
 

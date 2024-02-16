@@ -125,22 +125,26 @@ public class Elevator extends SubsystemBase {
     double feedback = extensionProfiledPIDControl.calculate(elevatorInputs.elevatorEncoder);
     double feedforward = extensionFeedforward.calculate(extensionProfiledPIDControl.getSetpoint().velocity);
 
-    io.setElevatorVoltage(feedback + feedforward);
-    
-    
-    if (extensionThresholdEnabled) {
-      try {
-        if (activate(activationLevel, extensionThreshold, elevatorInputs.elevatorEncoder)) {
-          double pidOutput = tiltPIDControl.calculate(elevatorInputs.absoluteTiltPositionRad.getRadians(), Units.degreesToRadians(tiltAngleSetPointDeg));
-          io.setTiltVoltage(pidOutput);
-        }
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    } else {
-      double pidOutput = tiltPIDControl.calculate(elevatorInputs.absoluteTiltPositionRad.getRadians(), Units.degreesToRadians(tiltAngleSetPointDeg));
-      io.setTiltVoltage(pidOutput);
+    if (elevatorInputs.elevatorLimitReached == true) {
+      io.setExtensionEncoderValue(0);
     }
+
+    // io.setElevatorVoltage(feedback + feedforward);
+    
+    
+    // if (extensionThresholdEnabled) {
+    //   try {
+    //     if (activate(activationLevel, extensionThreshold, elevatorInputs.elevatorEncoder)) {
+    //       double pidOutput = tiltPIDControl.calculate(elevatorInputs.absoluteTiltPositionRad.getRadians(), Units.degreesToRadians(tiltAngleSetPointDeg));
+    //       io.setTiltVoltage(pidOutput);
+    //     }
+    //   } catch (Exception e) {
+    //     e.printStackTrace();
+    //   }
+    // } else {
+    //   double pidOutput = tiltPIDControl.calculate(elevatorInputs.absoluteTiltPositionRad.getRadians(), Units.degreesToRadians(tiltAngleSetPointDeg));
+    //   io.setTiltVoltage(pidOutput);
+    // }
     
     updateTelemetry();
   }
@@ -195,7 +199,7 @@ public class Elevator extends SubsystemBase {
   }
   
   public Pose3d[] getPoses3d() {
-    Rotation3d angleRot = new Rotation3d(0, -armSim.getAngleRads(), 0);
+    Rotation3d angleRot = new Rotation3d(0, getTiltAngle(), 0);
     Pose3d basePose = new Pose3d(Units.inchesToMeters(-9.6), 0, Units.inchesToMeters(11), angleRot);
     Pose3d extensionPose = basePose.transformBy(new Transform3d(new Translation3d(getEleLength(), 0, 0), new Rotation3d()));
 
@@ -249,7 +253,30 @@ public class Elevator extends SubsystemBase {
 
   @AutoLogOutput(key = "Elevator/ElevatorLength")
   public double getEleLength() {
-    return eleSim.getPositionMeters();
+    switch (Constants.currentMode) {
+      case REAL:
+        return elevatorInputs.elevatorEncoder;
+
+      case SIM:
+        return eleSim.getPositionMeters();
+
+      default:
+        return 0;
+    }
+  }
+
+  @AutoLogOutput(key = "Elevator/TiltAngle")
+  public double getTiltAngle() {
+    switch (Constants.currentMode) {
+      case REAL:
+        return -elevatorInputs.absoluteDeg;
+      
+      case SIM:
+        return -armSim.getAngleRads();
+
+      default:
+        return 0;
+    }
   }
 
   @AutoLogOutput(key = "Elevator/ElevatorSetpoint")

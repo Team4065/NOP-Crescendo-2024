@@ -57,9 +57,9 @@ public class IndividualCam extends SubsystemBase {
 
   public List<Pose3d> getTagPoses() {
     List<Pose3d> detectedTagPoses = new ArrayList<>();
-    for (int i = 0; i < VisionSimIO.results.getTargets().size(); i++) {
-      detectedTagPoses.add(Constants.tagLayout.getTagPose(VisionSimIO.results.getTargets().get(i).getFiducialId()).get());
-    }
+    // for (int i = 0; i < VisionSimIO.results.getTargets().size(); i++) {
+    //   detectedTagPoses.add(Constants.tagLayout.getTagPose(VisionSimIO.results.getTargets().get(i).getFiducialId()).get());
+    // }
 
     return detectedTagPoses;
   }

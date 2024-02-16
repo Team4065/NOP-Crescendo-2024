@@ -85,7 +85,6 @@ public class Module {
   // doesnt take the long way
   public SwerveModuleState runSetPoint(SwerveModuleState state) {
     var optimizedState = SwerveModuleState.optimize(state, getAngle());
-    // var optimizedState = SwerveModuleState.optimize(state, new Rotation2d(Math.PI));
 
     angleSetPoint = optimizedState.angle;
     speedSetPoint = optimizedState.speedMetersPerSecond;

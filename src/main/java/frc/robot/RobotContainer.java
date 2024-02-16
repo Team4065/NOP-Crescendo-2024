@@ -4,50 +4,42 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.FeedForwardCharacterization;
 import frc.robot.commands.elevator.ReachState;
-import frc.robot.commands.swerve.ResetOdo;
+import frc.robot.commands.shooter.SetIntakeSpeed;
+import frc.robot.commands.shooter.SetShooterSpeed;
 import frc.robot.commands.swerve.SwerveControl;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
+import frc.robot.subsystems.elevator.ElevatorIOTalonFX;
+import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.ShooterIO;
+import frc.robot.subsystems.shooter.ShooterIOReal;
 import frc.robot.subsystems.swerve.GyroIO;
 import frc.robot.subsystems.swerve.GyroIONavX;
 import frc.robot.subsystems.swerve.Swerve;
+import frc.robot.subsystems.swerve.modules.Module;
 import frc.robot.subsystems.swerve.modules.ModuleIO;
 import frc.robot.subsystems.swerve.modules.ModuleIOSim;
 import frc.robot.subsystems.swerve.modules.ModuleIOTalonFX;
-import frc.robot.subsystems.vision.IndividualCam;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
-import frc.robot.subsystems.vision.VisionLimelight;
 import frc.robot.subsystems.vision.VisionSimIO;
 import frc.robot.util.AutoCommandBuilder;
 import frc.robot.util.NoteVisualizer;
 import frc.robot.util.PathFindingWithPath;
-
-import java.util.HashMap;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
-
-import com.ctre.phoenix6.Utils;
-import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
 
@@ -55,6 +47,9 @@ public class RobotContainer {
   public static Swerve m_swerve;
   public static Vision m_vision;
   public static Elevator m_elevator;
+  public static Shooter m_shooter;
+
+  public static PowerDistribution pdh;
 
   public static GenericHID controller = new GenericHID(0);
   public static JoystickButton AB = new JoystickButton(controller, 1);
@@ -85,12 +80,21 @@ public class RobotContainer {
           new ModuleIOTalonFX(2),
           new ModuleIOTalonFX(3)
         );
-        m_vision = new Vision(
-          new VisionLimelight("limelight-nop2"),
-          new VisionLimelight("limelight-nop3")
-        );
-        m_elevator = new Elevator(new ElevatorIO() {});
 
+        m_vision = new Vision(
+          new VisionIO() {},
+          new VisionIO() {}
+        );
+
+        m_shooter = new Shooter(
+          new ShooterIOReal()
+        );
+
+        m_elevator = new Elevator(new ElevatorIOTalonFX());
+
+        pdh = new PowerDistribution(Constants.pdhCANID, ModuleType.kRev);
+        pdh.setSwitchableChannel(true);
+        
         break;
       case SIM:
         m_swerve = new Swerve(
@@ -115,6 +119,8 @@ public class RobotContainer {
           )
         );
 
+        m_shooter = new Shooter(new ShooterIO() {});
+
         break;
       default:
         m_swerve = new Swerve(
@@ -131,6 +137,8 @@ public class RobotContainer {
         );
 
         m_elevator = new Elevator(new ElevatorIO() {});
+
+        m_shooter = new Shooter(new ShooterIO() {});
 
         break;
     }
@@ -163,10 +171,9 @@ public class RobotContainer {
 
     YB.onTrue(new InstantCommand(() -> {m_swerve.setPose(new Pose2d(0, 0, new Rotation2d(0)));}));
 
-    rightButton.onTrue(new ReachState("in"));
-    upButton.onTrue(new ReachState("amp"));
-    downButton.onTrue(new ReachState("intake"));
-    leftButton.onTrue(NoteVisualizer.shoot());
+    upButton.onTrue(new SetShooterSpeed(6));
+    rightButton.onTrue(new SetShooterSpeed(0));
+    downButton.onTrue(new SetIntakeSpeed(6));
 
   }
 
