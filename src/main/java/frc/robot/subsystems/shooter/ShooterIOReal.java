@@ -39,7 +39,7 @@ public class ShooterIOReal implements ShooterIO {
         bottomRollerApplVolts = bottomRollerMotor.getMotorVoltage();
         bottomRollerCurrAmp = bottomRollerMotor.getStatorCurrent();
 
-        intakeMotor.setInverted(true);
+        intakeMotor.setInverted(false);
 
         BaseStatusSignal.setUpdateFrequencyForAll(
             50.0,

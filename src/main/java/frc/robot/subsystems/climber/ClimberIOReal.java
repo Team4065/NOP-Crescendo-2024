@@ -17,8 +17,8 @@ public class ClimberIOReal implements ClimberIO {
     TalonFX leftTelescopeMotor = new TalonFX(Constants.ClimberConstants.leftTelescopeCANID, "rio");
 
     Compressor compressorPCM = new Compressor(Constants.ClimberConstants.pcmCANID, PneumaticsModuleType.REVPH);
-    Solenoid rightRatchet = new Solenoid(PneumaticsModuleType.REVPH, Constants.ClimberConstants.rightRatchetPort);
-    Solenoid leftRatchet = new Solenoid(PneumaticsModuleType.REVPH, Constants.ClimberConstants.leftRatchetPort);
+    Solenoid rightRatchet = new Solenoid(Constants.ClimberConstants.pcmCANID, PneumaticsModuleType.REVPH, Constants.ClimberConstants.rightRatchetPort);
+    Solenoid leftRatchet = new Solenoid(Constants.ClimberConstants.pcmCANID, PneumaticsModuleType.REVPH, Constants.ClimberConstants.leftRatchetPort);
 
     private final StatusSignal<Double> rightTelePosRad;
     private final StatusSignal<Double> rightTeleVelc;
@@ -34,9 +34,11 @@ public class ClimberIOReal implements ClimberIO {
         var configClockwise = new MotorOutputConfigs();
         configClockwise.Inverted = InvertedValue.Clockwise_Positive;
 
+        configClockwise.NeutralMode = NeutralModeValue.Coast;
         rightTelescopeMotor.getConfigurator().apply(configClockwise);
 
         var configCounterClockwise = new MotorOutputConfigs();
+        configClockwise.NeutralMode = NeutralModeValue.Coast;
         configClockwise.Inverted = InvertedValue.CounterClockwise_Positive;
 
         leftTelescopeMotor.getConfigurator().apply(configCounterClockwise);
@@ -66,10 +68,12 @@ public class ClimberIOReal implements ClimberIO {
         rightTelescopeMotor.optimizeBusUtilization();
         leftTelescopeMotor.optimizeBusUtilization();
 
-        compressorPCM.enableDigital();
+        compressorPCM.enableHybrid(50, 60);
 
-        rightRatchet.set(false);
-        leftRatchet.set(false);
+
+        // TRUE = MOTOR MOVEMENT, FALSE = NO MOTOR MOVEMENT
+        rightRatchet.set(true);
+        leftRatchet.set(!(true));
     }
 
     @Override
@@ -102,8 +106,8 @@ public class ClimberIOReal implements ClimberIO {
 
     @Override
     public void setSpeed(double speed) {
-        rightRatchet.set((speed != 0 ? true : false));
-        leftRatchet.set((speed != 0 ? true : false));
+        rightRatchet.set((speed <= 0 ? false : true));
+        leftRatchet.set((speed <= 0 ? false : true));
 
         rightTelescopeMotor.set(speed);
         leftTelescopeMotor.set(speed);
@@ -112,6 +116,6 @@ public class ClimberIOReal implements ClimberIO {
     @Override
     public void setRatchet(boolean state) {
         rightRatchet.set(state);
-        leftRatchet.set(state);
+        leftRatchet.set(!state);
     }
 }

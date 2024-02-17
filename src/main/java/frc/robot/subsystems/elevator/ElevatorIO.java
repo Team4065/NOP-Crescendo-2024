@@ -26,6 +26,7 @@ public interface ElevatorIO {
         public double elevatorAppliedVolts = 0.0;
         public double elevatorCurrentAmps = 0.0;
         public boolean elevatorLimitReached = false;
+        public double elevatorLinearVelocity = 0.0;
     }
 
     public default void updateInputs(ElevatorIOInputs inputs) {}

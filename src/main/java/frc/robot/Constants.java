@@ -6,6 +6,8 @@ package frc.robot;
 
 import java.util.HashMap;
 
+import com.ctre.phoenix6.Orchestra;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -38,6 +40,8 @@ public final class Constants {
 
   public static final AprilTagFieldLayout tagLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
 
+  public static final Orchestra shush = new Orchestra();
+
   public static final Field2d displayField = new Field2d();
   public static final HashMap<Command, String> autoRoutines = new HashMap<>(); // HashMap to find the auto name based on what command is selected in SendableChooser
 
@@ -49,8 +53,7 @@ public final class Constants {
 
     public static final double wheel_radius_meters = Units.inchesToMeters(4);
 
-    public static final double MAX_SPEED_FEET = 10
-    ;
+    public static final double MAX_SPEED_FEET = 10;
 
     public static class ModuleConstants {
       // FRONT LEFT
@@ -120,9 +123,9 @@ public final class Constants {
     public static final int rightTelescopeCANID = 20;
     public static final int leftTelescopeCANID = 15;
 
-    public static final int pcmCANID = 27;
+    public static final int pcmCANID = 19;
     public static final int rightRatchetPort = 0;
-    public static final int leftRatchetPort = 0;
+    public static final int leftRatchetPort = 1;
   }
 
   public static class LimelightPositions {

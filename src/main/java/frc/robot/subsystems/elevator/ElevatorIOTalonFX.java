@@ -2,12 +2,14 @@ package frc.robot.subsystems.elevator;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.HardwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.ForwardLimitValue;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
@@ -49,14 +51,23 @@ public class ElevatorIOTalonFX implements ElevatorIO {
 
         var configClockwise = new MotorOutputConfigs();
         configClockwise.Inverted = InvertedValue.Clockwise_Positive;
+        configClockwise.NeutralMode = NeutralModeValue.Brake;
 
         rightTiltMotor.getConfigurator().apply(configClockwise);
-        extensionMotor.getConfigurator().apply(configClockwise);
 
         var configCounterclockwise = new MotorOutputConfigs();
 
         configCounterclockwise.Inverted = InvertedValue.CounterClockwise_Positive;
+        configCounterclockwise.NeutralMode = NeutralModeValue.Brake;
         leftTiltMotor.getConfigurator().apply(configCounterclockwise);
+        extensionMotor.getConfigurator().apply(configCounterclockwise);
+
+        var limitSwitchConfig = new HardwareLimitSwitchConfigs();
+        limitSwitchConfig.ForwardLimitEnable = false;
+        limitSwitchConfig.ReverseLimitEnable = false;
+
+        extensionMotor.getConfigurator().apply(limitSwitchConfig);
+
 
         // absTiltEncoder.setDistancePerRotation(165);
 
@@ -70,7 +81,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         leftTiltApplVolts = leftTiltMotor.getMotorVoltage();
         leftTiltCurrAmp = leftTiltMotor.getStatorCurrent();
 
-        elePosRad = extensionMotor.getRotorPosition();
+        elePosRad = extensionMotor.getPosition();
         eleVelc =  extensionMotor.getVelocity();
         eleApplVolts = extensionMotor.getMotorVoltage();
         eleCurrAmp =  extensionMotor.getStatorCurrent();
@@ -126,9 +137,12 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         inputs.leftTiltAppliedVolts = leftTiltApplVolts.getValueAsDouble();
         inputs.leftTiltCurrentAmps = leftTiltCurrAmp.getValueAsDouble();
 
+        // Negating the value since going up equals negative value when instead it should be positive
         inputs.elevatorEncoder = Units.inchesToMeters(-elePosRad.getValueAsDouble() * 14.75 / 33.69);
-        inputs.elevatorPositionRad = new Rotation2d(Units.degreesToRadians(-elePosRad.getValueAsDouble()));
-        inputs.elevatorVelocityRadPerSec = eleVelc.getValueAsDouble();
+        inputs.elevatorPositionRad = new Rotation2d(Units.degreesToRadians(-elePosRad.getValueAsDouble() / 10));
+        inputs.elevatorVelocityRadPerSec = -eleVelc.getValueAsDouble() / 10; 
+        inputs.elevatorLinearVelocity = 4.5 * (-eleVelc.getValueAsDouble() / 10);
+
         inputs.elevatorLimitReached = extensionMotor.getForwardLimit().getValue() == ForwardLimitValue.ClosedToGround;
         inputs.elevatorAppliedVolts = eleApplVolts.getValueAsDouble();
         inputs.elevatorCurrentAmps = eleCurrAmp.getValueAsDouble();
@@ -142,6 +156,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
 
     @Override 
     public void setElevatorVoltage(double volts) {
+        System.out.println("reached");
         extensionMotor.setControl(new VoltageOut(volts));
     }
 

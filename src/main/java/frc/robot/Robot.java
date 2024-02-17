@@ -27,6 +27,7 @@ import org.littletonrobotics.junction.inputs.LoggedDriverStation;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 
+import com.ctre.phoenix6.configs.AudioConfigs;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.PathPoint;
@@ -85,6 +86,15 @@ public class Robot extends LoggedRobot {
 
     // Set A* algorithim for AdvantageKit as the default path-finding algorithim
     Pathfinding.setPathfinder(new LocalADStarAK());
+
+    AudioConfigs audConfig = new AudioConfigs();
+    audConfig.AllowMusicDurDisable = true;
+
+    var track = Constants.shush.loadMusic("chirp/vamp_anthem");
+
+    if (track.isOK()) {
+      Constants.shush.play();
+    }
   }
 
   /**
@@ -122,9 +132,7 @@ public class Robot extends LoggedRobot {
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
-  public void disabledInit() {
-
-  }
+  public void disabledInit() {}
 
   @Override
   public void disabledPeriodic() {
@@ -174,6 +182,8 @@ public class Robot extends LoggedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
     }
+
+    Constants.shush.stop();
   }
 
   /** This function is called periodically during autonomous. */
@@ -189,6 +199,8 @@ public class Robot extends LoggedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+
+    Constants.shush.stop();
   }
 
   /** This function is called periodically during operator control. */

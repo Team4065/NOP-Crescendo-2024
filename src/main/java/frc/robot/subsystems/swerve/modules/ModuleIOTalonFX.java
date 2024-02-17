@@ -138,6 +138,8 @@ public class ModuleIOTalonFX implements ModuleIO {
         turnCurrent);
     driveTalon.optimizeBusUtilization();
     turnTalon.optimizeBusUtilization();
+
+    Constants.shush.addInstrument(driveTalon);
   }
 
   @Override

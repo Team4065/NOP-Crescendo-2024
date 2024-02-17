@@ -8,6 +8,11 @@ package frc.robot.subsystems.elevator;
 import org.littletonrobotics.junction.AutoLog;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Volts;
+import static edu.wpi.first.units.MutableMeasure.mutable;
+
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
@@ -19,12 +24,20 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.MutableMeasure;
+import edu.wpi.first.units.Velocity;
+import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
+
 import java.lang.Math; 
 import frc.robot.Constants;
 import frc.robot.subsystems.vision.IndividualCam;
@@ -149,6 +162,28 @@ public class Elevator extends SubsystemBase {
     updateTelemetry();
   }
 
+  private final MutableMeasure<Voltage> m_appliedVoltage = mutable(Volts.of(0));
+  // Mutable holder for unit-safe linear distance values, persisted to avoid reallocation.
+  private final MutableMeasure<Distance> m_distance = mutable(Meters.of(0));
+  // Mutable holder for unit-safe linear velocity values, persisted to avoid reallocation.
+  private final MutableMeasure<Velocity<Distance>> m_velocity = mutable(MetersPerSecond.of(0));
+
+  public SysIdRoutine routine = new SysIdRoutine(
+    new SysIdRoutine.Config(),
+    new Mechanism(
+      (Measure<Voltage> volts) -> {
+        this.setExtensionVoltage(volts.in(Volts));
+      }, 
+      log -> {
+        log.motor("extension")
+        .voltage(m_appliedVoltage.mut_replace(this.getAppliedVoltage(), Volts))
+        .linearPosition(m_distance.mut_replace(Units.inchesToMeters(this.getEleLength()), Meters))
+        .linearVelocity(m_velocity.mut_replace(Units.inchesToMeters(this.getElevatorLinearVelc()), MetersPerSecond));
+      }, 
+      this
+    )
+  );
+
   @Override
   public void simulationPeriodic() {
     eleSim.setInputVoltage(elevatorInputs.elevatorAppliedVolts);
@@ -171,6 +206,10 @@ public class Elevator extends SubsystemBase {
     armSim.setInputVoltage(elevatorInputs.rightTiltAppliedVolts);
     armSim.update(0.02);
     io.setTiltSimEncoderInput(armSim.getAngleRads());
+  }
+
+  public void setTiltVoltage(double volts) {
+    io.setTiltVoltage(volts);
   }
 
   public boolean activate(String thresholdType, double thresholdValue, double sensorValue) throws Exception {
@@ -197,6 +236,10 @@ public class Elevator extends SubsystemBase {
     m_elevatorMech2d.setAngle(Units.radiansToDegrees(armSim.getAngleRads()));
     m_elevatorMech2d.setLength(elevatorInputs.elevatorEncoder);
   }
+
+  public double getElevatorLinearVelc() {
+    return elevatorInputs.elevatorLinearVelocity;
+  }
   
   public Pose3d[] getPoses3d() {
     Rotation3d angleRot = new Rotation3d(0, getTiltAngle(), 0);
@@ -213,6 +256,14 @@ public class Elevator extends SubsystemBase {
   public void reachTarget(double angle, double extensionFeet) {
     tiltAngleSetPointDeg = angle;
     extensionProfiledPIDControl.setGoal(Units.feetToMeters(extensionFeet));
+  }
+
+  public void setExtensionVoltage(double volts) {
+    io.setElevatorVoltage(volts);
+  }
+
+  public double getAppliedVoltage() {
+    return elevatorInputs.elevatorAppliedVolts;
   }
 
   public void reachState(String state) {

@@ -5,16 +5,36 @@
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import static edu.wpi.first.units.Units.Volts;
+
+import java.util.function.Consumer;
+import static edu.wpi.first.units.Units.Meters;
+
+import static edu.wpi.first.units.MutableMeasure.mutable;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.MutableMeasure;
+import edu.wpi.first.units.Time;
+import edu.wpi.first.units.Velocity;
+import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
+import edu.wpi.first.wpilibj.util.WPILibVersion;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import frc.robot.commands.FeedForwardCharacterization;
+import frc.robot.commands.climber.RaiseClimber;
 import frc.robot.commands.elevator.ReachState;
 import frc.robot.commands.shooter.SetIntakeSpeed;
 import frc.robot.commands.shooter.SetShooterSpeed;
@@ -60,6 +80,8 @@ public class RobotContainer {
   public static JoystickButton XB = new JoystickButton(controller, 3);
   public static JoystickButton BB = new JoystickButton(controller, 2);
   public static JoystickButton YB = new JoystickButton(controller, 4);
+  public static JoystickButton leftBumper = new JoystickButton(controller, 5);
+  public static JoystickButton rightBumper = new JoystickButton(controller, 6);
 
   public static POVButton upButton = new POVButton(controller, 0);
   public static POVButton downButton = new POVButton(controller, 180);
@@ -72,10 +94,12 @@ public class RobotContainer {
 
   public static NoteVisualizer noteVis = new NoteVisualizer();
 
+  
+
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    switch (Constants.currentMode) {
+   switch (Constants.currentMode) {
       case REAL:
         m_swerve = new Swerve(
           new GyroIONavX(),
@@ -177,22 +201,37 @@ public class RobotContainer {
       () -> -controller.getRawAxis(0), 
       () -> -controller.getRawAxis(4)
     ));
-
     
 
     /* AB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Stage Middle Finisher", AB));
     BB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Source Finisher 1", BB));
     XB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("AMP Finisher", XB)); */
 
-    YB.onTrue(new InstantCommand(() -> {m_swerve.setPose(new Pose2d(0, 0, new Rotation2d(0)));}));
 
-    upButton.onTrue(new SetShooterSpeed(6));
-    rightButton.onTrue(new SetShooterSpeed(0));
-    downButton.onTrue(new SetIntakeSpeed(6));
+    // rightButton.onTrue(new InstantCommand(() -> {m_elevator.setExtensionVoltage(2);}).onlyIf(() -> rightButton.getAsBoolean()));    
+    // leftButton.onTrue(new InstantCommand(() -> {m_elevator.setExtensionVoltage(-2);}));
 
+   /*  XB.onTrue(new InstantCommand(() -> {m_elevator.setTiltVoltage(1);}));
+    BB.onTrue(new InstantCommand(() -> {m_elevator.setTiltVoltage(0);}));
+
+    YB.onTrue(new InstantCommand(() -> {m_elevator.setTiltVoltage(-1);}));
+    AB.onTrue(new InstantCommand(() -> {m_elevator.setTiltVoltage(0);}));
+
+    rightBumper.onTrue(new InstantCommand(() -> {m_swerve.setPose(new Pose2d());}));
+
+    upButton.onTrue(new SetShooterSpeed(8));
+    downButton.onTrue(new SetShooterSpeed(0));
+
+    leftButton.onTrue(new SetIntakeSpeed(8));
+    rightButton.onTrue(new SetIntakeSpeed(0));
+    */
+
+    YB.whileTrue(m_elevator.routine.quasistatic(Direction.kForward));
+    BB.whileTrue(m_elevator.routine.dynamic(Direction.kReverse));
   }
 
   public Command getAutonomousCommand() {
-    return m_chooser.get();
+    return m_elevator.routine.quasistatic(Direction.kForward);
+    // return new InstantCommand(() -> {m_elevator.setVoltage(1);});
   }
 }
