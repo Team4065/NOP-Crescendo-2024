@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.swerve;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -18,31 +19,17 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.networktables.NetworkTableEntry;
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.subsystems.swerve.modules.Module;
 import frc.robot.subsystems.swerve.modules.ModuleIO;
-
-import java.util.List;
-
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggedDriverStation;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.PathPlannerAuto;
-import com.pathplanner.lib.path.PathPlannerPath;
-import com.pathplanner.lib.path.PathPlannerTrajectory;
-import com.pathplanner.lib.path.PathPoint;
-import com.pathplanner.lib.path.PathPlannerTrajectory.State;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
@@ -62,6 +49,9 @@ public class Swerve extends SubsystemBase {
   SwerveDriveKinematics kinematics = new SwerveDriveKinematics(getModuleTranslations());
   Pose2d pose = new Pose2d(0, 0, new Rotation2d());
   Rotation2d lastGyroRotation = new Rotation2d();
+
+  private final PIDController headingPID;
+  public double headingFeedbackVal = 0;
 
   /** Creates a new Swerve. */
   public Swerve(GyroIO gyroIO, ModuleIO moduleFL, ModuleIO moduleFR, ModuleIO moduleBL, ModuleIO moduleBR) {
@@ -97,6 +87,22 @@ public class Swerve extends SubsystemBase {
         Constants.displayField.getObject("Field").setTrajectory(trajToDisplay);
       }
     });
+
+    switch (Constants.currentMode) {
+      case REAL: 
+        headingPID = new PIDController(0, 0, 0);
+        break;
+      
+      case SIM:
+        headingPID = new PIDController(2.3, 0.01, 0.009);
+        break;
+
+      default:
+        headingPID = new PIDController(0, 0, 0);
+        break;
+    }
+
+    headingPID.enableContinuousInput(-Math.PI, Math.PI);
   }
 
   @Override
@@ -189,6 +195,31 @@ public class Swerve extends SubsystemBase {
       states[i] = modules[i].getState();
     }
     return states;
+  }
+
+  @AutoLogOutput(key = "Swerve/HeadingSetpoint")
+  public double getHeadingSetpoint() {
+    return headingPID.getSetpoint();
+  }
+
+  @AutoLogOutput(key = "Swerve/AutoAimingAngle")
+  public double getAutoAimingAngle() {
+    // double currentPoseX = pose.getX();
+    // double currentPoseY = pose.getY();
+    
+    // double referenceX = Constants.FieldConstants.blueSpeakerReferencePoint.getX();
+    // double referenceY = Constants.FieldConstants.blueSpeakerReferencePoint.getY();
+
+    // return Math.tan(currentPoseY - referenceY / currentPoseX - referenceX); // Angle in radians
+    Translation2d robotTranslation = pose.getTranslation();
+    Translation2d speakerVector = robotTranslation.minus(Constants.FieldConstants.blueSpeakerReferencePoint);
+
+    return speakerVector.getAngle().getRadians();
+  }
+
+  public double getHeadingFeedback(Rotation2d setPoint) {
+    headingFeedbackVal = headingPID.calculate(pose.getRotation().getRadians(), setPoint.getRadians());
+    return headingPID.calculate(pose.getRotation().getRadians(), setPoint.getRadians());
   }
 
   public double getMaxLinearSpeed() {    

@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import static edu.wpi.first.units.Units.Volts;
 
@@ -202,6 +203,12 @@ public class RobotContainer {
       () -> -controller.getRawAxis(4)
     ));
     
+    rightBumper.whileTrue(new SwerveControl(
+      m_swerve, 
+      () -> -controller.getRawAxis(1), 
+      () -> -controller.getRawAxis(0), 
+      () -> MathUtil.clamp(m_swerve.getHeadingFeedback(new Rotation2d(m_swerve.getAutoAimingAngle())), -1, 1)
+    ));
 
     /* AB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Stage Middle Finisher", AB));
     BB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Source Finisher 1", BB));
@@ -217,7 +224,7 @@ public class RobotContainer {
     YB.onTrue(new InstantCommand(() -> {m_elevator.setTiltVoltage(-1);}));
     AB.onTrue(new InstantCommand(() -> {m_elevator.setTiltVoltage(0);}));
 
-    rightBumper.onTrue(new InstantCommand(() -> {m_swerve.setPose(new Pose2d());}));
+    rightBumper.onTrue(new ResetOdo());
 
     upButton.onTrue(new SetShooterSpeed(8));
     downButton.onTrue(new SetShooterSpeed(0));
@@ -227,11 +234,14 @@ public class RobotContainer {
     */
 
     YB.whileTrue(m_elevator.routine.quasistatic(Direction.kForward));
-    BB.whileTrue(m_elevator.routine.dynamic(Direction.kReverse));
+    AB.whileTrue(m_elevator.routine.quasistatic(Direction.kReverse));
+    
+    BB.whileTrue(m_elevator.routine.dynamic(Direction.kForward));
+    XB.whileTrue(m_elevator.routine.dynamic(Direction.kReverse));
+
   }
 
   public Command getAutonomousCommand() {
-    return m_elevator.routine.quasistatic(Direction.kForward);
-    // return new InstantCommand(() -> {m_elevator.setVoltage(1);});
+    return m_chooser.get();
   }
 }

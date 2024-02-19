@@ -52,13 +52,13 @@ public class VisionSimIO implements VisionIO {
 
   public VisionSimIO(Supplier<Pose2d> currentRobotPoseSupp, Transform3d cameraPosToRobot, String simCamName) {
     visionFieldSim = new VisionSystemSim("main");
-    visionFieldSim.addAprilTags(Constants.tagLayout);
+    visionFieldSim.addAprilTags(Constants.FieldConstants.tagLayout);
 
     this.cameraPosToRobot = cameraPosToRobot;
     this.simCamName = simCamName;
 
     fakeCamera = new PhotonCamera(simCamName);
-    photonPoseEstimator = new PhotonPoseEstimator(Constants.tagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, fakeCamera, cameraPosToRobot); 
+    photonPoseEstimator = new PhotonPoseEstimator(Constants.FieldConstants.tagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, fakeCamera, cameraPosToRobot); 
     
     cameraProp.setCalibration(1280, 960, Rotation2d.fromDegrees(54));
     // Approximate detection noise with average and standard deviation error in pixels.

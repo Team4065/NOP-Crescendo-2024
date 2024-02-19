@@ -13,6 +13,7 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
@@ -28,7 +29,7 @@ import edu.wpi.first.wpilibj2.command.Command;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-  public static final Mode currentMode = Mode.REAL;
+  public static final Mode currentMode = Mode.SIM;
 
   public static enum Mode {
     REAL,
@@ -38,7 +39,10 @@ public final class Constants {
 
   public static final int pdhCANID = 18;
 
-  public static final AprilTagFieldLayout tagLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
+  public static class FieldConstants {
+    public static final AprilTagFieldLayout tagLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
+    public static final Translation2d blueSpeakerReferencePoint = new Translation2d(0, 5.475);
+  }
 
   public static final Orchestra shush = new Orchestra();
 
@@ -53,7 +57,7 @@ public final class Constants {
 
     public static final double wheel_radius_meters = Units.inchesToMeters(4);
 
-    public static final double MAX_SPEED_FEET = 10;
+    public static final double MAX_SPEED_FEET = 16;
 
     public static class ModuleConstants {
       // FRONT LEFT

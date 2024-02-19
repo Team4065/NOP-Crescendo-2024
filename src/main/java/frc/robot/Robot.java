@@ -63,6 +63,15 @@ public class Robot extends LoggedRobot {
       case REAL:
         // Logger.addDataReceiver(new WPILOGWriter());
         Logger.addDataReceiver(new NT4Publisher());
+
+        AudioConfigs audConfig = new AudioConfigs();
+        audConfig.AllowMusicDurDisable = true;
+
+        var track = Constants.shush.loadMusic("chirp/vamp_anthem");
+
+        if (track.isOK()) {
+          Constants.shush.play();
+        }
         break;
 
         // Running a physics simulator, log to local folder
@@ -86,15 +95,6 @@ public class Robot extends LoggedRobot {
 
     // Set A* algorithim for AdvantageKit as the default path-finding algorithim
     Pathfinding.setPathfinder(new LocalADStarAK());
-
-    AudioConfigs audConfig = new AudioConfigs();
-    audConfig.AllowMusicDurDisable = true;
-
-    var track = Constants.shush.loadMusic("chirp/vamp_anthem");
-
-    if (track.isOK()) {
-      Constants.shush.play();
-    }
   }
 
   /**
