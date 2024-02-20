@@ -39,6 +39,7 @@ import frc.robot.commands.climber.RaiseClimber;
 import frc.robot.commands.elevator.ReachState;
 import frc.robot.commands.shooter.SetIntakeSpeed;
 import frc.robot.commands.shooter.SetShooterSpeed;
+import frc.robot.commands.swerve.ResetOdo;
 import frc.robot.commands.swerve.SwerveControl;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.climber.ClimberIO;
@@ -203,26 +204,24 @@ public class RobotContainer {
       () -> -controller.getRawAxis(4)
     ));
     
-    rightBumper.whileTrue(new SwerveControl(
-      m_swerve, 
-      () -> -controller.getRawAxis(1), 
-      () -> -controller.getRawAxis(0), 
-      () -> MathUtil.clamp(m_swerve.getHeadingFeedback(new Rotation2d(m_swerve.getAutoAimingAngle())), -1, 1)
-    ));
+    // rightBumper.whileTrue(new SwerveControl(
+    //   m_swerve, 
+    //   () -> -controller.getRawAxis(1), 
+    //   () -> -controller.getRawAxis(0), 
+    //   () -> MathUtil.clamp(m_swerve.getHeadingFeedback(new Rotation2d(m_swerve.getAutoAimingAngle())), -1, 1)
+    // ));
 
     /* AB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Stage Middle Finisher", AB));
     BB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Source Finisher 1", BB));
     XB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("AMP Finisher", XB)); */
 
-
-    // rightButton.onTrue(new InstantCommand(() -> {m_elevator.setExtensionVoltage(2);}).onlyIf(() -> rightButton.getAsBoolean()));    
-    // leftButton.onTrue(new InstantCommand(() -> {m_elevator.setExtensionVoltage(-2);}));
-
-   /*  XB.onTrue(new InstantCommand(() -> {m_elevator.setTiltVoltage(1);}));
+    // Manual Control
+    XB.onTrue(new InstantCommand(() -> {m_elevator.setTiltVoltage(-1);}));
     BB.onTrue(new InstantCommand(() -> {m_elevator.setTiltVoltage(0);}));
 
-    YB.onTrue(new InstantCommand(() -> {m_elevator.setTiltVoltage(-1);}));
-    AB.onTrue(new InstantCommand(() -> {m_elevator.setTiltVoltage(0);}));
+    YB.onTrue(new InstantCommand(() -> {m_elevator.setExtensionVoltage(1);}));
+    AB.onTrue(new InstantCommand(() -> {m_elevator.setExtensionVoltage(-1);}));
+    leftBumper.onTrue(new InstantCommand(() -> {m_elevator.setExtensionVoltage(0);}));
 
     rightBumper.onTrue(new ResetOdo());
 
@@ -231,13 +230,17 @@ public class RobotContainer {
 
     leftButton.onTrue(new SetIntakeSpeed(8));
     rightButton.onTrue(new SetIntakeSpeed(0));
-    */
-
-    YB.whileTrue(m_elevator.routine.quasistatic(Direction.kForward));
-    AB.whileTrue(m_elevator.routine.quasistatic(Direction.kReverse));
+   
     
-    BB.whileTrue(m_elevator.routine.dynamic(Direction.kForward));
-    XB.whileTrue(m_elevator.routine.dynamic(Direction.kReverse));
+
+    // YB.whileTrue(m_elevator.routine.quasistatic(Direction.kForward));
+    // AB.whileTrue(m_elevator.routine.quasistatic(Direction.kReverse));
+    
+    // BB.whileTrue(m_elevator.routine.dynamic(Direction.kForward));
+    // XB.whileTrue(m_elevator.routine.dynamic(Direction.kReverse));
+
+    // XB.onTrue(new InstantCommand(() -> {m_elevator.reachExtension(0);}));
+    // YB.onTrue(new InstantCommand(() -> {m_elevator.reachExtension(8);}));
 
   }
 

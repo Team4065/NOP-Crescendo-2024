@@ -8,6 +8,10 @@ package frc.robot.subsystems.elevator;
 import org.littletonrobotics.junction.AutoLog;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
+
+import com.ctre.phoenix6.SignalLogger;
+import com.ctre.phoenix6.controls.VoltageOut;
+
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Volts;
@@ -82,6 +86,8 @@ public class Elevator extends SubsystemBase {
 
   private double tiltAngleSetPointDeg;
 
+  double extensionGoal = 0;
+
   /* 
     Variables used for "thresholding" 
       For example the arm is at 90 degrees and is fully extended, 
@@ -100,8 +106,8 @@ public class Elevator extends SubsystemBase {
 
     switch (Constants.currentMode) {
       case REAL:
-        extensionProfiledPIDControl = new ProfiledPIDController(0, 0, 0, new TrapezoidProfile.Constraints(2.6, 2.6));
-        extensionFeedforward = new ElevatorFeedforward(0.0, 0.0, 0, 0.0);
+        extensionProfiledPIDControl = new ProfiledPIDController(41, 0, 0.1, new TrapezoidProfile.Constraints(2, 2));
+        extensionFeedforward = new ElevatorFeedforward(0.10077, 0.26093, 9.7355, 0.10116);
 
         tiltPIDControl = new PIDController(0, 0, 0);
 
@@ -134,7 +140,7 @@ public class Elevator extends SubsystemBase {
   public void periodic() {
     io.updateInputs(elevatorInputs);
     Logger.processInputs("Elevator", elevatorInputs);
-
+    /* extensionProfiledPIDControl.setGoal(Units.inchesToMeters(extensionGoal));
     double feedback = extensionProfiledPIDControl.calculate(elevatorInputs.elevatorEncoder);
     double feedforward = extensionFeedforward.calculate(extensionProfiledPIDControl.getSetpoint().velocity);
 
@@ -142,7 +148,7 @@ public class Elevator extends SubsystemBase {
       io.setExtensionEncoderValue(0);
     }
 
-    // io.setElevatorVoltage(feedback + feedforward);
+    io.setElevatorVoltage(feedback + feedforward); */
     
     
     // if (extensionThresholdEnabled) {
@@ -177,12 +183,27 @@ public class Elevator extends SubsystemBase {
       log -> {
         log.motor("extension")
         .voltage(m_appliedVoltage.mut_replace(this.getAppliedVoltage(), Volts))
-        .linearPosition(m_distance.mut_replace(Units.inchesToMeters(this.getEleLength()), Meters))
-        .linearVelocity(m_velocity.mut_replace(Units.inchesToMeters(this.getElevatorLinearVelc()), MetersPerSecond));
+        .linearPosition(m_distance.mut_replace(-Units.inchesToMeters(this.getEleLength()), Meters))
+        .linearVelocity(m_velocity.mut_replace(-Units.inchesToMeters(this.getElevatorLinearVelc()), MetersPerSecond));
       }, 
       this
     )
   );
+
+  /*private final VoltageOut m_sysidControl = new VoltageOut(0);
+
+  public SysIdRoutine m_SysIdRoutine =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                null,         // Default ramp rate is acceptable
+                Volts.of(4), // Reduce dynamic voltage to 4 to prevent motor brownout
+                null,          // Default timeout is acceptable
+                                       // Log state with Phoenix SignalLogger class
+                (state)->SignalLogger.writeString("state", state.toString())),
+            new SysIdRoutine.Mechanism(
+                (Measure<Voltage> volts)-> io.setElevatorVoltage(volts.in(Volts)),
+                null,
+                this));*/
 
   @Override
   public void simulationPeriodic() {
@@ -223,8 +244,8 @@ public class Elevator extends SubsystemBase {
     }
   }
 
-  public void reachExtension(double extensionFeet) {
-    extensionProfiledPIDControl.setGoal(Units.feetToMeters(extensionFeet));
+  public void reachExtension(double extensionInches) {
+    extensionGoal = extensionInches;
   }
 
   public void setAngle(double angleToSet) {

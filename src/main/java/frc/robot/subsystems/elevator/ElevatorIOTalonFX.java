@@ -138,7 +138,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         inputs.leftTiltCurrentAmps = leftTiltCurrAmp.getValueAsDouble();
 
         // Negating the value since going up equals negative value when instead it should be positive
-        inputs.elevatorEncoder = Units.inchesToMeters(-elePosRad.getValueAsDouble() * 14.75 / 33.69);
+        inputs.elevatorEncoder = Units.inchesToMeters(elePosRad.getValueAsDouble() * 14.75 / 33.69);
         inputs.elevatorPositionRad = new Rotation2d(Units.degreesToRadians(-elePosRad.getValueAsDouble() / 10));
         inputs.elevatorVelocityRadPerSec = -eleVelc.getValueAsDouble() / 10; 
         inputs.elevatorLinearVelocity = 4.5 * (-eleVelc.getValueAsDouble() / 10);
@@ -156,7 +156,6 @@ public class ElevatorIOTalonFX implements ElevatorIO {
 
     @Override 
     public void setElevatorVoltage(double volts) {
-        System.out.println("reached");
         extensionMotor.setControl(new VoltageOut(volts));
     }
 

@@ -2,6 +2,8 @@ package frc.robot.subsystems.elevator;
 
 import org.littletonrobotics.junction.AutoLog;
 
+import com.ctre.phoenix6.controls.VoltageOut;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 
 public interface ElevatorIO {
