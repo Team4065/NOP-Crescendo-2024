@@ -29,7 +29,7 @@ import edu.wpi.first.wpilibj2.command.Command;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-  public static final Mode currentMode = Mode.REAL;
+  public static final Mode currentMode = Mode.SIM;
 
   public static enum Mode {
     REAL,
@@ -57,7 +57,7 @@ public final class Constants {
 
     public static final double wheel_radius_meters = Units.inchesToMeters(4);
 
-    public static final double MAX_SPEED_FEET = 10;
+    public static final double MAX_SPEED_FEET = 15;
 
     public static class ModuleConstants {
       // FRONT LEFT
@@ -113,6 +113,7 @@ public final class Constants {
     public static final int extensionMotorCANID = 21;
 
     public static final int absoluteEncoderDIO = 8;
+    public static final int neutralModeButton = 7;
   }
 
   public static class ShooterConstants {

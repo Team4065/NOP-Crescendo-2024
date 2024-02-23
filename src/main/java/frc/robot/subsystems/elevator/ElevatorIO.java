@@ -5,6 +5,9 @@ import org.littletonrobotics.junction.AutoLog;
 import com.ctre.phoenix6.controls.VoltageOut;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Velocity;
 
 public interface ElevatorIO {
     @AutoLog
@@ -21,6 +24,7 @@ public interface ElevatorIO {
 
         public Rotation2d absoluteTiltPositionRad = new Rotation2d();
         public double absoluteDeg = 0.0;
+        public double absoluteVelc = 0.0;
 
         public double elevatorEncoder = 0;
         public Rotation2d elevatorPositionRad = new Rotation2d();
@@ -29,6 +33,9 @@ public interface ElevatorIO {
         public double elevatorCurrentAmps = 0.0;
         public boolean elevatorLimitReached = false;
         public double elevatorLinearVelocity = 0.0;
+
+        public boolean neturalModeButton = false;
+        public boolean isBrakeMode = false;
     }
 
     public default void updateInputs(ElevatorIOInputs inputs) {}
@@ -37,9 +44,7 @@ public interface ElevatorIO {
 
     public default void setElevatorVoltage (double volts) {}
 
-    public default void setTiltBrakeMode(boolean enable) {}
-
-    public default void setElevatorBrakeMode(boolean enable) {}
+    public default void setBrakeMode(boolean state) {}
 
     public default void setExtensionEncoderValue(double val) {}
 

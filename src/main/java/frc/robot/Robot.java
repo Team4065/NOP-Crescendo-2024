@@ -16,7 +16,6 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.util.LocalADStarAK;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -94,7 +93,6 @@ public class Robot extends LoggedRobot {
     Shuffleboard.getTab("Autonomous").add(Constants.displayField);
 
     // Set A* algorithim for AdvantageKit as the default path-finding algorithim
-    Pathfinding.setPathfinder(new LocalADStarAK());
   }
 
   /**
@@ -136,40 +134,48 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void disabledPeriodic() {
-    // red --> 1, 2, 3
-    // blue --> 4, 5, 6
-    int robotPos = LoggedDriverStation.getDSData().allianceStation; 
-    allianceColor = (robotPos > 3) ? "BLUE" : "RED";
+    // // red --> 1, 2, 3
+    // // blue --> 4, 5, 6
+    // int robotPos = LoggedDriverStation.getDSData().allianceStation; 
+    // allianceColor = (robotPos > 3) ? "BLUE" : "RED";
 
-    if (robotPos > 3) {
-      allianceColorWidget.setBoolean(true);
-    } else if (robotPos <= 3) {
-      allianceColorWidget.setBoolean(false);
-    } else {
-      allianceColorWidget.setString("ERROR");
-    }
+    // if (robotPos > 3) {
+    //   allianceColorWidget.setBoolean(true);
+    // } else if (robotPos <= 3) {
+    //   allianceColorWidget.setBoolean(false);
+    // } else {
+    //   allianceColorWidget.setString("ERROR");
+    // }
 
-    Trajectory finalTrajectoryToDisplay;
+    // Trajectory finalTrajectoryToDisplay;
 
-    if (RobotContainer.m_chooser.get() != RobotContainer.noAutoCommand) {
-      int pathsInAuto = PathPlannerAuto.getPathGroupFromAutoFile(Constants.autoRoutines.get(RobotContainer.m_chooser.get())).size();
-      List<Pose2d> posesOnTrajectory = new ArrayList<>();
+    // if (RobotContainer.m_chooser.get() != RobotContainer.noAutoCommand) {
+    //   int pathsInAuto = PathPlannerAuto.getPathGroupFromAutoFile(Constants.autoRoutines.get(RobotContainer.m_chooser.get())).size();
+    //   List<Pose2d> posesOnTrajectory = new ArrayList<>();
 
-      for (int i = 0; i < pathsInAuto; i++) {
-          PathPlannerPath currentPath = PathPlannerAuto.getPathGroupFromAutoFile(Constants.autoRoutines.get(RobotContainer.m_chooser.get())).get(i);
-          List<PathPoint> pathPoints = currentPath.getAllPathPoints();
-        for (int j = 0; j < pathPoints.size(); j++) {
-          posesOnTrajectory.add(j, new Pose2d(pathPoints.get(j).position, new Rotation2d(0)));
-        }
+    //   for (int i = 0; i < pathsInAuto; i++) {
+    //       PathPlannerPath currentPath = PathPlannerAuto.getPathGroupFromAutoFile(Constants.autoRoutines.get(RobotContainer.m_chooser.get())).get(i);
+    //       List<PathPoint> pathPoints = currentPath.getAllPathPoints();
+    //     for (int j = 0; j < pathPoints.size(); j++) {
+    //       posesOnTrajectory.add(j, new Pose2d(pathPoints.get(j).position, new Rotation2d(0)));
+    //     }
+    //   }
+
+    //   finalTrajectoryToDisplay = TrajectoryGenerator.generateTrajectory(posesOnTrajectory, new TrajectoryConfig(Units.metersToFeet(Constants.SwerveConstants.MAX_SPEED_FEET), Units.metersToFeet(Constants.SwerveConstants.MAX_SPEED_FEET)));
+
+    // } else {
+    //   finalTrajectoryToDisplay = new Trajectory();
+    // }
+
+    // Constants.displayField.getObject("Field").setTrajectory(finalTrajectoryToDisplay);
+
+    if (RobotContainer.m_elevator.getButtonState() == false) {
+      if (RobotContainer.m_elevator.isBrake()) {
+        RobotContainer.m_elevator.setBrakeMode(false);
+      } else {
+        RobotContainer.m_elevator.setBrakeMode(true);
       }
-
-      finalTrajectoryToDisplay = TrajectoryGenerator.generateTrajectory(posesOnTrajectory, new TrajectoryConfig(Units.metersToFeet(Constants.SwerveConstants.MAX_SPEED_FEET), Units.metersToFeet(Constants.SwerveConstants.MAX_SPEED_FEET)));
-
-    } else {
-      finalTrajectoryToDisplay = new Trajectory();
     }
-
-    Constants.displayField.getObject("Field").setTrajectory(finalTrajectoryToDisplay);
 
   }
 
@@ -201,6 +207,7 @@ public class Robot extends LoggedRobot {
     }
 
     Constants.shush.stop();
+    RobotContainer.m_elevator.setBrakeMode(true);
   }
 
   /** This function is called periodically during operator control. */

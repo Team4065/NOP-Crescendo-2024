@@ -216,7 +216,7 @@ public class RobotContainer {
     XB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("AMP Finisher", XB)); */
 
     // Manual Control
-    XB.onTrue(new InstantCommand(() -> {m_elevator.setTiltVoltage(-1);}));
+   /*  XB.onTrue(new InstantCommand(() -> {m_elevator.setTiltVoltage(-1);}));
     BB.onTrue(new InstantCommand(() -> {m_elevator.setTiltVoltage(0);}));
 
     YB.onTrue(new InstantCommand(() -> {m_elevator.setExtensionVoltage(1);}));
@@ -230,14 +230,14 @@ public class RobotContainer {
 
     leftButton.onTrue(new SetIntakeSpeed(8));
     rightButton.onTrue(new SetIntakeSpeed(0));
-   
+    */
     
 
-    // YB.whileTrue(m_elevator.routine.quasistatic(Direction.kForward));
-    // AB.whileTrue(m_elevator.routine.quasistatic(Direction.kReverse));
+    YB.whileTrue(m_elevator.angleRoutine.quasistatic(Direction.kForward));
+    AB.whileTrue(m_elevator.angleRoutine.quasistatic(Direction.kReverse));
     
-    // BB.whileTrue(m_elevator.routine.dynamic(Direction.kForward));
-    // XB.whileTrue(m_elevator.routine.dynamic(Direction.kReverse));
+    BB.whileTrue(m_elevator.angleRoutine.dynamic(Direction.kForward));
+    XB.whileTrue(m_elevator.angleRoutine.dynamic(Direction.kReverse));
 
     // XB.onTrue(new InstantCommand(() -> {m_elevator.reachExtension(0);}));
     // YB.onTrue(new InstantCommand(() -> {m_elevator.reachExtension(8);}));

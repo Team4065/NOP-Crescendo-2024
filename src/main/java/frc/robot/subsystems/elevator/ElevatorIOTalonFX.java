@@ -1,5 +1,7 @@
 package frc.robot.subsystems.elevator;
 
+import java.text.BreakIterator;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.HardwareLimitSwitchConfigs;
@@ -13,6 +15,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DutyCycle;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.Encoder;
@@ -24,6 +27,8 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     TalonFX extensionMotor = new TalonFX(Constants.ElevatorConstants.extensionMotorCANID, "rio");
 
     DutyCycleEncoder absTiltEncoder = new DutyCycleEncoder(Constants.ElevatorConstants.absoluteEncoderDIO);
+
+    DigitalInput buttonState = new DigitalInput(Constants.ElevatorConstants.neutralModeButton);
 
     private final StatusSignal<Double> rightTiltPosRad;
     private final StatusSignal<Double> rightTiltVelc;
@@ -40,6 +45,8 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     private final StatusSignal<Double> eleApplVolts;
     private final StatusSignal<Double> eleCurrAmp;
 
+    boolean isBrake;
+
     public ElevatorIOTalonFX() {
         var commonMotorConfig = new TalonFXConfiguration();
         commonMotorConfig.CurrentLimits.StatorCurrentLimit = 40.0;
@@ -53,13 +60,15 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         configClockwise.Inverted = InvertedValue.Clockwise_Positive;
         configClockwise.NeutralMode = NeutralModeValue.Brake;
 
-        rightTiltMotor.getConfigurator().apply(configClockwise);
 
         var configCounterclockwise = new MotorOutputConfigs();
 
         configCounterclockwise.Inverted = InvertedValue.CounterClockwise_Positive;
         configCounterclockwise.NeutralMode = NeutralModeValue.Brake;
-        leftTiltMotor.getConfigurator().apply(configCounterclockwise);
+
+        rightTiltMotor.getConfigurator().apply(configCounterclockwise);
+
+        leftTiltMotor.getConfigurator().apply(configClockwise);
         extensionMotor.getConfigurator().apply(configCounterclockwise);
 
         var limitSwitchConfig = new HardwareLimitSwitchConfigs();
@@ -68,8 +77,10 @@ public class ElevatorIOTalonFX implements ElevatorIO {
 
         extensionMotor.getConfigurator().apply(limitSwitchConfig);
 
+        isBrake = true;
 
         // absTiltEncoder.setDistancePerRotation(165);
+        // absTiltEncoder.setDistancePerRotation(1 / 6);
 
         rightTiltPosRad = rightTiltMotor.getPosition();
         rightTiltVelc = rightTiltMotor.getVelocity();
@@ -125,7 +136,8 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         );
 
         inputs.absoluteTiltPositionRad = new Rotation2d(Units.degreesToRadians(absTiltEncoder.getDistance()));
-        inputs.absoluteDeg = absTiltEncoder.getDistance() + 1;
+        // inputs.absoluteDeg = absTiltEncoder.getDistance() + Units.degreesToRadians(63.5);
+        inputs.absoluteDeg = Units.rotationsToRadians(absTiltEncoder.get() / 6) + Units.degreesToRadians(58.6);
 
         inputs.rightTiltPositionRad = new Rotation2d(Units.degreesToRadians(rightTiltPosRad.getValueAsDouble()));
         inputs.rightTiltVelocityRadPerSec = rightTiltVelc.getValueAsDouble();
@@ -133,7 +145,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         inputs.rightTiltCurrentAmps = rightTiltCurrAmp.getValueAsDouble();
 
         inputs.leftTiltPositionRad = new Rotation2d(Units.degreesToRadians(leftTiltPosRad.getValueAsDouble()));
-        inputs.leftTiltVelocityRadPerSec = leftTiltVelc.getValueAsDouble();
+        inputs.leftTiltVelocityRadPerSec = leftTiltVelc.getValueAsDouble() / 133;
         inputs.leftTiltAppliedVolts = leftTiltApplVolts.getValueAsDouble();
         inputs.leftTiltCurrentAmps = leftTiltCurrAmp.getValueAsDouble();
 
@@ -146,6 +158,10 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         inputs.elevatorLimitReached = extensionMotor.getForwardLimit().getValue() == ForwardLimitValue.ClosedToGround;
         inputs.elevatorAppliedVolts = eleApplVolts.getValueAsDouble();
         inputs.elevatorCurrentAmps = eleCurrAmp.getValueAsDouble();
+
+        // TRUE -- NOT PRESSED, FALSE -- PRESSED
+        inputs.neturalModeButton = buttonState.get();
+        inputs.isBrakeMode = isBrake; // valueOf(1) returns Brake, 0 gives coast
     }   
 
     @Override
@@ -162,5 +178,44 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     @Override
     public void setExtensionEncoderValue(double value) {
         extensionMotor.setPosition(value);
+    }
+
+    @Override
+    public void setBrakeMode(boolean state) {
+        if (state) {
+            var configClockwise = new MotorOutputConfigs();
+            configClockwise.Inverted = InvertedValue.Clockwise_Positive;
+            configClockwise.NeutralMode = NeutralModeValue.Brake;
+
+
+            var configCounterclockwise = new MotorOutputConfigs();
+
+            configCounterclockwise.Inverted = InvertedValue.CounterClockwise_Positive;
+            configCounterclockwise.NeutralMode = NeutralModeValue.Brake;
+
+            rightTiltMotor.getConfigurator().apply(configCounterclockwise);
+
+            leftTiltMotor.getConfigurator().apply(configClockwise);
+            extensionMotor.getConfigurator().apply(configCounterclockwise);
+
+            isBrake = true;
+        } else if (state == false) {
+            var configClockwise = new MotorOutputConfigs();
+            configClockwise.Inverted = InvertedValue.Clockwise_Positive;
+            configClockwise.NeutralMode = NeutralModeValue.Coast;
+
+
+            var configCounterclockwise = new MotorOutputConfigs();
+
+            configCounterclockwise.Inverted = InvertedValue.CounterClockwise_Positive;
+            configCounterclockwise.NeutralMode = NeutralModeValue.Coast;
+
+            rightTiltMotor.getConfigurator().apply(configCounterclockwise);
+
+            leftTiltMotor.getConfigurator().apply(configClockwise);
+            extensionMotor.getConfigurator().apply(configCounterclockwise);
+
+            isBrake = false;
+        }
     }
 }
