@@ -12,6 +12,8 @@ import org.littletonrobotics.junction.Logger;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.controls.VoltageOut;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
@@ -154,6 +156,10 @@ public class Elevator extends SubsystemBase {
     io.updateInputs(elevatorInputs);
     Logger.processInputs("Elevator", elevatorInputs);
 
+    if (elevatorInputs.tiltReached) {
+      io.setTiltMotorEncoderValue(-6);
+    }
+
 
     // extensionProfiledPIDControl.setGoal(Units.inchesToMeters(extensionGoal));
     // tiltPIDControl.setGoal(Units.degreesToRadians(45));
@@ -215,7 +221,7 @@ public class Elevator extends SubsystemBase {
   //     }, 
   //     log -> {
   //       log.motor("extension")
-  //       .voltage(m_appliedVoltage.mut_replace(this.getAppliedVoltage(), Volts))
+  //       .voltage(m_appliedVoltage.mut_replace(this.getExtensionAppliedVoltage(), Volts))
   //       .linearPosition(m_distance.mut_replace(-Units.inchesToMeters(this.getEleLength()), Meters))
   //       .linearVelocity(m_velocity.mut_replace(-Units.inchesToMeters(this.getElevatorLinearVelc()), MetersPerSecond));
   //     }, 
@@ -225,9 +231,9 @@ public class Elevator extends SubsystemBase {
 
   private final MutableMeasure<Voltage> m_appliedTiltVoltage = mutable(Volts.of(0));
   // Mutable holder for unit-safe linear distance values, persisted to avoid reallocation.
-  private final MutableMeasure<Angle> m_angle = mutable(Radians.of(0));
+  private final MutableMeasure<Angle> m_angle = mutable(Degrees.of(0));
   // Mutable holder for unit-safe linear velocity values, persisted to avoid reallocation.
-  private final MutableMeasure<Velocity<Angle>> m_velocityAngle = mutable(RadiansPerSecond.of(0));
+  private final MutableMeasure<Velocity<Angle>> m_velocityAngle = mutable(DegreesPerSecond.of(0));
 
   public SysIdRoutine angleRoutine = new SysIdRoutine(
     new SysIdRoutine.Config(null, Volts.of(3.5), null),
@@ -237,9 +243,9 @@ public class Elevator extends SubsystemBase {
       }, 
       log -> {
         log.motor("tilt")
-        .voltage(m_appliedTiltVoltage.mut_replace(this.getAppliedVoltage(), Volts))
-        .angularPosition(m_angle.mut_replace(elevatorInputs.absoluteDeg, Radians))
-        .angularVelocity(m_velocityAngle.mut_replace(elevatorInputs.leftTiltVelocityRadPerSec * Math.PI * 2, RadiansPerSecond));
+        .voltage(m_appliedTiltVoltage.mut_replace(this.getTiltAppliedVoltage(), Volts))
+        .angularPosition(m_angle.mut_replace(elevatorInputs.absoluteDeg, Degrees))
+        .angularVelocity(m_velocityAngle.mut_replace(elevatorInputs.leftTiltVelocityRadPerSec, DegreesPerSecond));
       }, 
       this
     )
@@ -323,8 +329,12 @@ public class Elevator extends SubsystemBase {
     io.setElevatorVoltage(volts);
   }
 
-  public double getAppliedVoltage() {
+  public double getExtensionAppliedVoltage() {
     return elevatorInputs.elevatorAppliedVolts;
+  }
+
+  public double getTiltAppliedVoltage() {
+    return elevatorInputs.rightTiltAppliedVolts;
   }
 
   public void reachState(String state) {

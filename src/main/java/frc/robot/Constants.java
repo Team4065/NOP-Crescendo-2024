@@ -29,7 +29,7 @@ import edu.wpi.first.wpilibj2.command.Command;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-  public static final Mode currentMode = Mode.SIM;
+  public static final Mode currentMode = Mode.REAL;
 
   public static enum Mode {
     REAL,
@@ -100,7 +100,7 @@ public final class Constants {
     public static final double elevatorEncoderDistPerPulse = 2.0 * Math.PI * elevatorDrumRadius / 1024;
 
     public static final DCMotor tiltMotorSimGearbox = DCMotor.getFalcon500(1);
-    public static final double tiltGearRatio = 165;
+    public static final double tiltGearRatio = 133;
     public static final double armMass = 8.61826;
     public static final double minAngleRadians = Units.degreesToRadians(-10);
     public static final double maxAngleRadians = Units.degreesToRadians(90);
@@ -112,7 +112,7 @@ public final class Constants {
     public static final int leftTiltMotorCANID = 14;
     public static final int extensionMotorCANID = 21;
 
-    public static final int absoluteEncoderDIO = 8;
+    public static final int absoluteEncoderDIO = 9;
     public static final int neutralModeButton = 7;
   }
 

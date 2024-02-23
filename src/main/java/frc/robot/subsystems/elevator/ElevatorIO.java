@@ -22,6 +22,8 @@ public interface ElevatorIO {
         public double leftTiltAppliedVolts = 0.0;
         public double leftTiltCurrentAmps = 0.0;
 
+        public boolean tiltReached = false;
+
         public Rotation2d absoluteTiltPositionRad = new Rotation2d();
         public double absoluteDeg = 0.0;
         public double absoluteVelc = 0.0;
@@ -47,6 +49,8 @@ public interface ElevatorIO {
     public default void setBrakeMode(boolean state) {}
 
     public default void setExtensionEncoderValue(double val) {}
+
+    public default void setTiltMotorEncoderValue(double val) {}
 
     public default void setDistanceSimEncoderInput(double distance) {}
 
