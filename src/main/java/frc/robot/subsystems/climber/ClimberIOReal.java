@@ -68,7 +68,7 @@ public class ClimberIOReal implements ClimberIO {
         rightTelescopeMotor.optimizeBusUtilization();
         leftTelescopeMotor.optimizeBusUtilization();
 
-        compressorPCM.enableHybrid(50, 60);
+        // compressorPCM.enableHybrid(50, 60);
 
 
         // TRUE = MOTOR MOVEMENT, FALSE = NO MOTOR MOVEMENT

@@ -92,8 +92,9 @@ public class Elevator extends SubsystemBase {
   private final MechanismLigament2d m_elevatorMech2d = m_mech2dRoot.append(new MechanismLigament2d("Elevator", eleSim.getPositionMeters(), Units.radiansToDegrees(armSim.getAngleRads())));
 
   private double tiltAngleSetPointDeg;
+  private double extensionGoal;
 
-  double extensionGoal = 8;
+  // 13, 7.91
 
   /* 
     Variables used for "thresholding" 
@@ -116,8 +117,8 @@ public class Elevator extends SubsystemBase {
         extensionProfiledPIDControl = new ProfiledPIDController(41, 0, 0.15, new TrapezoidProfile.Constraints(2, 2));
         extensionFeedforward = new ElevatorFeedforward(0.10077, 0.26093, 9.7355, 0.10116);
 
-        tiltPIDControl = new ProfiledPIDController(1, 0, 0, new TrapezoidProfile.Constraints(3, 10));
-        tiltFeedfoward = new ArmFeedforward(0.10077, 0.13, 2.96);
+        tiltPIDControl = new ProfiledPIDController(0.1, 0, 0, new TrapezoidProfile.Constraints(50, 100), 0.01);
+        tiltFeedfoward = new ArmFeedforward(0.17277, 0.3864, 0.041776, 0.0023621);
 
         break;
       case SIM:
@@ -146,52 +147,35 @@ public class Elevator extends SubsystemBase {
         break;
     }
 
-    reachState("in");
     io.setBrakeMode(true);
   }
 
   @Override
   public void periodic() {
-    extensionProfiledPIDControl.setGoal(extensionGoal);
     io.updateInputs(elevatorInputs);
     Logger.processInputs("Elevator", elevatorInputs);
+
+    extensionProfiledPIDControl.setGoal(Units.inchesToMeters(extensionGoal));
+
+    double extensionFeedback = extensionProfiledPIDControl.calculate(elevatorInputs.elevatorEncoder);
+    double extensionFeedforwardVal = extensionFeedforward.calculate(extensionProfiledPIDControl.getSetpoint().velocity);
+
+    if (elevatorInputs.elevatorLimitReached == true) {
+      io.setExtensionEncoderValue(0);
+    }
+
+    io.setElevatorVoltage(extensionFeedback + extensionFeedforwardVal);
+
+    double tiltFeedback = tiltPIDControl.calculate(elevatorInputs.elevatorEncoder);
+    double tiltFeedfowardVal = tiltFeedfoward.calculate(Units.degreesToRadians(tiltPIDControl.getSetpoint().position), tiltPIDControl.getSetpoint().velocity);
 
     if (elevatorInputs.tiltReached) {
       io.setTiltMotorEncoderValue(-6);
     }
-
-
-    // extensionProfiledPIDControl.setGoal(Units.inchesToMeters(extensionGoal));
-    // tiltPIDControl.setGoal(Units.degreesToRadians(45));
-
-    // double extensionFeedback = extensionProfiledPIDControl.calculate(elevatorInputs.elevatorEncoder);
-    // double extensionFeedforwardVal = extensionFeedforward.calculate(extensionProfiledPIDControl.getSetpoint().velocity);
-
-    // double tiltFeedback = tiltPIDControl.calculate(elevatorInputs.absoluteDeg);
-    // double tiltFeedfowardVal = tiltFeedfoward.calculate(tiltPIDControl.getSetpoint().position, tiltPIDControl.getSetpoint().velocity);
-
-    // if (elevatorInputs.elevatorLimitReached == true) {
-    //   io.setExtensionEncoderValue(0);
-    // }
-
-    // io.setElevatorVoltage(extensionFeedback + extensionFeedforwardVal);
-    // io.setTiltVoltage(tiltFeedback + tiltFeedfowardVal);
     
+    io.setTiltVoltage(tiltFeedback + tiltFeedfowardVal);
     
-    // if (extensionThresholdEnabled) {
-    //   try {
-    //     if (activate(activationLevel, extensionThreshold, elevatorInputs.elevatorEncoder)) {
-    //       double pidOutput = tiltPIDControl.calculate(elevatorInputs.absoluteTiltPositionRad.getRadians(), Units.degreesToRadians(tiltAngleSetPointDeg));
-    //       io.setTiltVoltage(pidOutput);
-    //     }
-    //   } catch (Exception e) {
-    //     e.printStackTrace();
-    //   }
-    // } else {
-    //   double pidOutput = tiltPIDControl.calculate(elevatorInputs.absoluteTiltPositionRad.getRadians(), Units.degreesToRadians(tiltAngleSetPointDeg));
-    //   io.setTiltVoltage(pidOutput);
-    // }
-    
+        
     updateTelemetry();
   }
 
@@ -229,27 +213,27 @@ public class Elevator extends SubsystemBase {
   //   )
   // );
 
-  private final MutableMeasure<Voltage> m_appliedTiltVoltage = mutable(Volts.of(0));
-  // Mutable holder for unit-safe linear distance values, persisted to avoid reallocation.
-  private final MutableMeasure<Angle> m_angle = mutable(Degrees.of(0));
-  // Mutable holder for unit-safe linear velocity values, persisted to avoid reallocation.
-  private final MutableMeasure<Velocity<Angle>> m_velocityAngle = mutable(DegreesPerSecond.of(0));
+  // private final MutableMeasure<Voltage> m_appliedTiltVoltage = mutable(Volts.of(0));
+  // // Mutable holder for unit-safe linear distance values, persisted to avoid reallocation.
+  // private final MutableMeasure<Angle> m_angle = mutable(Degrees.of(0));
+  // // Mutable holder for unit-safe linear velocity values, persisted to avoid reallocation.
+  // private final MutableMeasure<Velocity<Angle>> m_velocityAngle = mutable(DegreesPerSecond.of(0));
 
-  public SysIdRoutine angleRoutine = new SysIdRoutine(
-    new SysIdRoutine.Config(null, Volts.of(3.5), null),
-    new Mechanism(
-      (Measure<Voltage> volts) -> {
-        this.setTiltVoltage(volts.in(Volts));
-      }, 
-      log -> {
-        log.motor("tilt")
-        .voltage(m_appliedTiltVoltage.mut_replace(this.getTiltAppliedVoltage(), Volts))
-        .angularPosition(m_angle.mut_replace(elevatorInputs.absoluteDeg, Degrees))
-        .angularVelocity(m_velocityAngle.mut_replace(elevatorInputs.leftTiltVelocityRadPerSec, DegreesPerSecond));
-      }, 
-      this
-    )
-  );
+  // public SysIdRoutine angleRoutine = new SysIdRoutine(
+  //   new SysIdRoutine.Config(null, Volts.of(3.5), null),
+  //   new Mechanism(
+  //     (Measure<Voltage> volts) -> {
+  //       this.setTiltVoltage(volts.in(Volts));
+  //     }, 
+  //     log -> {
+  //       log.motor("tilt")
+  //       .voltage(m_appliedTiltVoltage.mut_replace(this.getTiltAppliedVoltage(), Volts))
+  //       .angularPosition(m_angle.mut_replace(elevatorInputs.absoluteDeg, Degrees))
+  //       .angularVelocity(m_velocityAngle.mut_replace(elevatorInputs.leftTiltVelocityRadPerSec, DegreesPerSecond));
+  //     }, 
+  //     this
+  //   )
+  // );
 
   @Override
   public void simulationPeriodic() {
@@ -275,7 +259,7 @@ public class Elevator extends SubsystemBase {
     io.setTiltSimEncoderInput(armSim.getAngleRads());
   }
 
-  public void setTiltVoltage(double volts) {
+  public void setAngleVoltage(double volts) {
     io.setTiltVoltage(volts);
   }
 
@@ -290,12 +274,22 @@ public class Elevator extends SubsystemBase {
     }
   }
 
+  public double getElevatorEncoder() {
+    return elevatorInputs.elevatorEncoder;
+  }
+
   public void reachExtension(double extensionInches) {
-    extensionGoal = extensionInches;
+    extensionProfiledPIDControl.setGoal(extensionInches);
   }
 
   public void setAngle(double angleToSet) {
     tiltAngleSetPointDeg = angleToSet;
+    tiltPIDControl.setGoal(angleToSet);
+  }
+
+  @AutoLogOutput(key = "Elevator/TiltGoal")
+  public double getAngleGoal() {
+    return tiltPIDControl.getGoal().position;
   }
 
   public void updateTelemetry() {
@@ -401,9 +395,13 @@ public class Elevator extends SubsystemBase {
     }
   }
 
+  public double getAngleDeg() {
+    return elevatorInputs.absoluteDeg;
+  }
+
   @AutoLogOutput(key = "Elevator/ElevatorSetpoint")
   public double getExtensionGoal() {
-    return extensionProfiledPIDControl.getGoal().position;
+    return extensionProfiledPIDControl.getSetpoint().position;
   }
 
   @AutoLogOutput(key = "Elevator/TiltSetpoint")

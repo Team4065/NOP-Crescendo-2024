@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -25,6 +27,7 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggedDriverStation;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import com.ctre.phoenix6.configs.AudioConfigs;
 import com.pathplanner.lib.commands.PathPlannerAuto;
@@ -50,6 +53,8 @@ public class Robot extends LoggedRobot {
     .withSize(3, 1)
     .getEntry();
 
+  Debouncer neturalModeButtonDebouncer = new Debouncer(0.1, DebounceType.kBoth);
+
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -60,7 +65,7 @@ public class Robot extends LoggedRobot {
       // Running on a real robot, log to a USB stick 
       // The "/U" is there to indicate that the roboRIO will store on the USB
       case REAL:
-        // Logger.addDataReceiver(new WPILOGWriter());
+        Logger.addDataReceiver(new WPILOGWriter());
         Logger.addDataReceiver(new NT4Publisher());
 
         AudioConfigs audConfig = new AudioConfigs();
@@ -169,13 +174,16 @@ public class Robot extends LoggedRobot {
 
     // Constants.displayField.getObject("Field").setTrajectory(finalTrajectoryToDisplay);
 
-    if (RobotContainer.m_elevator.getButtonState() == false) {
+    if (neturalModeButtonDebouncer.calculate(RobotContainer.m_elevator.getButtonState()) == false) {
       if (RobotContainer.m_elevator.isBrake()) {
         RobotContainer.m_elevator.setBrakeMode(false);
       } else {
         RobotContainer.m_elevator.setBrakeMode(true);
       }
     }
+
+    RobotContainer.m_elevator.reachExtension(RobotContainer.m_elevator.getElevatorEncoder());    
+    RobotContainer.m_elevator.setAngle(RobotContainer.m_elevator.getAngleDeg());
 
   }
 

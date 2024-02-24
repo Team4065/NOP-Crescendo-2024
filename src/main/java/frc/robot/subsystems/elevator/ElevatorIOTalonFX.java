@@ -8,6 +8,7 @@ import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.HardwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.ForwardLimitValue;
@@ -100,9 +101,9 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         eleApplVolts = extensionMotor.getMotorVoltage();
         eleCurrAmp =  extensionMotor.getStatorCurrent();
 
+
         BaseStatusSignal.setUpdateFrequencyForAll(
             50.0,
-            rightTiltPosRad,
             rightTiltVelc,
             rightTiltApplVolts,
             rightTiltCurrAmp,
@@ -116,6 +117,8 @@ public class ElevatorIOTalonFX implements ElevatorIO {
             eleCurrAmp
         );
 
+        BaseStatusSignal.setUpdateFrequencyForAll(100, rightTiltPosRad);
+
         rightTiltMotor.optimizeBusUtilization();
         leftTiltMotor.optimizeBusUtilization();
         extensionMotor.optimizeBusUtilization();
@@ -124,7 +127,6 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     @Override
     public void updateInputs(ElevatorIOInputs inputs) {
         BaseStatusSignal.refreshAll(
-            rightTiltPosRad,
             rightTiltVelc,
             rightTiltApplVolts,
             rightTiltCurrAmp,
@@ -138,12 +140,14 @@ public class ElevatorIOTalonFX implements ElevatorIO {
             eleCurrAmp  
         );
 
+        BaseStatusSignal.refreshAll(rightTiltPosRad);
+
         inputs.absoluteTiltPositionRad = new Rotation2d(Units.degreesToRadians(absTiltEncoder.getDistance()));
         // inputs.absoluteDeg = Units.rotationsToRadians(rightTiltPosRad.getValueAsDouble() / ((60./18) * (60./9) * (60./10)));
         // inputs.absoluteDeg = (0.41544421052631 * rightTiltPosRad.getValueAsDouble()) - 2.3172;
         inputs.absoluteDeg = (rightTiltPosRad.getValueAsDouble() + 2.2222) * 2.42 + -5;
 
-        inputs.rightTiltPositionRad = new Rotation2d(Units.degreesToRadians(rightTiltPosRad.getValueAsDouble()));
+        inputs.rightTiltPositionRad = rightTiltPosRad.getValueAsDouble();
         inputs.rightTiltVelocityRadPerSec = rightTiltVelc.getValueAsDouble();
         inputs.rightTiltAppliedVolts = rightTiltApplVolts.getValueAsDouble();
         inputs.rightTiltCurrentAmps = rightTiltCurrAmp.getValueAsDouble();
@@ -168,7 +172,9 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         inputs.isBrakeMode = isBrake;
 
         inputs.tiltReached = rightTiltMotor.getForwardLimit().getValue() == ForwardLimitValue.ClosedToGround;
-    }   
+    } 
+    
+    
 
     @Override
     public void setTiltVoltage(double volts) {
@@ -188,7 +194,6 @@ public class ElevatorIOTalonFX implements ElevatorIO {
 
     @Override
     public void setBrakeMode(boolean state) {
-        rightTiltMotor.setPosition(Units.degreesToRotations(-6));
         if (state) {
             var configClockwise = new MotorOutputConfigs();
             configClockwise.Inverted = InvertedValue.Clockwise_Positive;

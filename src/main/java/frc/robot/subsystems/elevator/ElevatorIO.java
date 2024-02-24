@@ -12,7 +12,7 @@ import edu.wpi.first.units.Velocity;
 public interface ElevatorIO {
     @AutoLog
     public static class ElevatorIOInputs {
-        public Rotation2d rightTiltPositionRad = new Rotation2d();
+        public double rightTiltPositionRad = 0.0;
         public double rightTiltVelocityRadPerSec = 0.0;
         public double rightTiltAppliedVolts = 0.0;
         public double rightTiltCurrentAmps = 0.0;

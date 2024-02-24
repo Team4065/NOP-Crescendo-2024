@@ -11,16 +11,7 @@ import static edu.wpi.first.units.Units.Volts;
 import java.util.function.Consumer;
 import static edu.wpi.first.units.Units.Meters;
 
-import static edu.wpi.first.units.MutableMeasure.mutable;
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.Distance;
-import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.MutableMeasure;
-import edu.wpi.first.units.Time;
-import edu.wpi.first.units.Velocity;
-import edu.wpi.first.units.Voltage;
+
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
@@ -37,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import frc.robot.commands.FeedForwardCharacterization;
 import frc.robot.commands.climber.RaiseClimber;
 import frc.robot.commands.elevator.ReachState;
+import frc.robot.commands.elevator.ReachTilt;
 import frc.robot.commands.shooter.SetIntakeSpeed;
 import frc.robot.commands.shooter.SetShooterSpeed;
 import frc.robot.commands.swerve.ResetOdo;
@@ -196,6 +188,8 @@ public class RobotContainer {
     configureBindings();
   }
 
+  double currentAngle = -5;
+
   private void configureBindings() {
     m_swerve.setDefaultCommand(new SwerveControl(
       m_swerve, 
@@ -233,11 +227,14 @@ public class RobotContainer {
     */
     
 
-    YB.whileTrue(m_elevator.angleRoutine.quasistatic(Direction.kForward));
-    AB.whileTrue(m_elevator.angleRoutine.quasistatic(Direction.kReverse));
+    // YB.whileTrue(m_elevator.angleRoutine.quasistatic(Direction.kForward));
+    // AB.whileTrue(m_elevator.angleRoutine.quasistatic(Direction.kReverse));
     
-    BB.whileTrue(m_elevator.angleRoutine.dynamic(Direction.kForward));
-    XB.whileTrue(m_elevator.angleRoutine.dynamic(Direction.kReverse));
+    // BB.whileTrue(m_elevator.angleRoutine.dynamic(Direction.kForward));
+    // XB.whileTrue(m_elevator.angleRoutine.dynamic(Direction.kReverse));
+
+    // upButton.onTrue(new ReachTilt(45));
+    // downButton.onTrue(new ReachTilt(14));
 
     // XB.onTrue(new InstantCommand(() -> {m_elevator.reachExtension(0);}));
     // YB.onTrue(new InstantCommand(() -> {m_elevator.reachExtension(8);}));
