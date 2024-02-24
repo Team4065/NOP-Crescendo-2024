@@ -1,14 +1,10 @@
 package frc.robot.subsystems.elevator;
 
-import java.text.BreakIterator;
-
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.HardwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.ForwardLimitValue;
@@ -18,9 +14,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.DutyCycle;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
-import edu.wpi.first.wpilibj.Encoder;
 import frc.robot.Constants;
 
 public class ElevatorIOTalonFX implements ElevatorIO {
@@ -146,6 +140,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         // inputs.absoluteDeg = Units.rotationsToRadians(rightTiltPosRad.getValueAsDouble() / ((60./18) * (60./9) * (60./10)));
         // inputs.absoluteDeg = (0.41544421052631 * rightTiltPosRad.getValueAsDouble()) - 2.3172;
         inputs.absoluteDeg = (rightTiltPosRad.getValueAsDouble() + 2.2222) * 2.42 + -5;
+        inputs.absoluteVelc = rightTiltPosRad.getValueAsDouble() * 2.42;
 
         inputs.rightTiltPositionRad = rightTiltPosRad.getValueAsDouble();
         inputs.rightTiltVelocityRadPerSec = rightTiltVelc.getValueAsDouble();
@@ -153,7 +148,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         inputs.rightTiltCurrentAmps = rightTiltCurrAmp.getValueAsDouble();
 
         inputs.leftTiltPositionRad = new Rotation2d(Units.degreesToRadians(leftTiltPosRad.getValueAsDouble()));
-        inputs.leftTiltVelocityRadPerSec = leftTiltVelc.getValueAsDouble() * 2.42;
+        inputs.leftTiltVelocityRadPerSec = leftTiltVelc.getValueAsDouble();
         inputs.leftTiltAppliedVolts = leftTiltApplVolts.getValueAsDouble();
         inputs.leftTiltCurrentAmps = leftTiltCurrAmp.getValueAsDouble();
 

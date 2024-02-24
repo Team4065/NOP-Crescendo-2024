@@ -166,7 +166,10 @@ public class Elevator extends SubsystemBase {
 
     io.setElevatorVoltage(extensionFeedback + extensionFeedforwardVal);
 
-    double tiltFeedback = tiltPIDControl.calculate(elevatorInputs.elevatorEncoder);
+
+
+
+    double tiltFeedback = tiltPIDControl.calculate(elevatorInputs.absoluteDeg);
     double tiltFeedfowardVal = tiltFeedfoward.calculate(Units.degreesToRadians(tiltPIDControl.getSetpoint().position), tiltPIDControl.getSetpoint().velocity);
 
     if (elevatorInputs.tiltReached) {
@@ -176,6 +179,7 @@ public class Elevator extends SubsystemBase {
     io.setTiltVoltage(tiltFeedback + tiltFeedfowardVal);
     
         
+
     updateTelemetry();
   }
 
