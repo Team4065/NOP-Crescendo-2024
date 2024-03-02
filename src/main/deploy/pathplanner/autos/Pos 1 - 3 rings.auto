@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.7167669684859925,
-      "y": 4.286166175761195
+      "x": 0.72,
+      "y": 4.29
     },
-    "rotation": -63.46987196099428
+    "rotation": -58.7362683062763
   },
   "command": {
     "type": "sequential",
@@ -20,7 +20,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "P1 - R3 2"
+            "pathName": "P1-R3 2"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 1.5
           }
         },
         {
@@ -32,7 +38,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "P1 - R3 4"
+            "pathName": " P1 - R3 4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "stop"
           }
         }
       ]

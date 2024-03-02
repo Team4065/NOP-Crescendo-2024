@@ -4,7 +4,11 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.HardwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.ControlRequest;
+import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.ForwardLimitValue;
@@ -18,11 +22,9 @@ import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import frc.robot.Constants;
 
 public class ElevatorIOTalonFX implements ElevatorIO {
-    TalonFX rightTiltMotor = new TalonFX(Constants.ElevatorConstants.rightTiltMotorCANID, "rio");
-    TalonFX leftTiltMotor = new TalonFX(Constants.ElevatorConstants.leftTiltMotorCANID, "rio");
+    TalonFX rightTiltMotor;
+    TalonFX leftTiltMotor;
     TalonFX extensionMotor = new TalonFX(Constants.ElevatorConstants.extensionMotorCANID, "rio");
-
-    DutyCycleEncoder absTiltEncoder = new DutyCycleEncoder(Constants.ElevatorConstants.absoluteEncoderDIO);
 
     DigitalInput buttonState = new DigitalInput(Constants.ElevatorConstants.neutralModeButton);
 
@@ -44,6 +46,9 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     boolean isBrake;
 
     public ElevatorIOTalonFX() {
+        rightTiltMotor = new TalonFX(Constants.ElevatorConstants.rightTiltMotorCANID, "rio");
+        leftTiltMotor = new TalonFX(Constants.ElevatorConstants.leftTiltMotorCANID, "rio");
+
         var commonMotorConfig = new TalonFXConfiguration();
         commonMotorConfig.CurrentLimits.StatorCurrentLimit = 40.0;
         commonMotorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
@@ -63,7 +68,6 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         configCounterclockwise.NeutralMode = NeutralModeValue.Brake;
 
         rightTiltMotor.getConfigurator().apply(configCounterclockwise);
-
         leftTiltMotor.getConfigurator().apply(configClockwise);
         extensionMotor.getConfigurator().apply(configCounterclockwise);
 
@@ -72,6 +76,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         limitSwitchConfig.ReverseLimitEnable = false;
 
         extensionMotor.getConfigurator().apply(limitSwitchConfig);
+
 
         // var encoderRatioConfig = new FeedbackConfigs();
         // encoderRatioConfig.SensorToMechanismRatio = 1 / 133;
@@ -136,9 +141,6 @@ public class ElevatorIOTalonFX implements ElevatorIO {
 
         BaseStatusSignal.refreshAll(rightTiltPosRad);
 
-        inputs.absoluteTiltPositionRad = new Rotation2d(Units.degreesToRadians(absTiltEncoder.getDistance()));
-        // inputs.absoluteDeg = Units.rotationsToRadians(rightTiltPosRad.getValueAsDouble() / ((60./18) * (60./9) * (60./10)));
-        // inputs.absoluteDeg = (0.41544421052631 * rightTiltPosRad.getValueAsDouble()) - 2.3172;
         inputs.absoluteDeg = (rightTiltPosRad.getValueAsDouble() + 2.2222) * 2.42 + -5;
         inputs.absoluteVelc = rightTiltPosRad.getValueAsDouble() * 2.42;
 
@@ -201,8 +203,8 @@ public class ElevatorIOTalonFX implements ElevatorIO {
             configCounterclockwise.NeutralMode = NeutralModeValue.Brake;
 
             rightTiltMotor.getConfigurator().apply(configCounterclockwise);
-
             leftTiltMotor.getConfigurator().apply(configClockwise);
+
             extensionMotor.getConfigurator().apply(configCounterclockwise);
 
             isBrake = true;
@@ -218,8 +220,8 @@ public class ElevatorIOTalonFX implements ElevatorIO {
             configCounterclockwise.NeutralMode = NeutralModeValue.Coast;
 
             rightTiltMotor.getConfigurator().apply(configCounterclockwise);
-
             leftTiltMotor.getConfigurator().apply(configClockwise);
+
             extensionMotor.getConfigurator().apply(configCounterclockwise);
 
             isBrake = false;
@@ -229,5 +231,6 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     @Override
     public void setTiltMotorEncoderValue(double degrees) {
         rightTiltMotor.setPosition(Units.degreesToRotations(degrees) * 133.3333333333333333333);
+        leftTiltMotor.setPosition(Units.degreesToRotations(degrees) * 133.3333333333333333333);
     }
 }

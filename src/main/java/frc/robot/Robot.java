@@ -65,17 +65,9 @@ public class Robot extends LoggedRobot {
       // Running on a real robot, log to a USB stick 
       // The "/U" is there to indicate that the roboRIO will store on the USB
       case REAL:
-        Logger.addDataReceiver(new WPILOGWriter());
+        // Logger.addDataReceiver(new WPILOGWriter());
         Logger.addDataReceiver(new NT4Publisher());
 
-        AudioConfigs audConfig = new AudioConfigs();
-        audConfig.AllowMusicDurDisable = true;
-
-        var track = Constants.shush.loadMusic("chirp/vamp_anthem");
-
-        if (track.isOK()) {
-          Constants.shush.play();
-        }
         break;
 
         // Running a physics simulator, log to local folder
@@ -135,8 +127,14 @@ public class Robot extends LoggedRobot {
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
-  public void disabledInit() {}
-
+  public void disabledInit() {
+    var track = Constants.shush.loadMusic("/home/lvuser/deploy/chirp/vamp_anthem");
+    if (track.isOK()) {
+      System.out.println("track playing");
+      Constants.shush.play();
+    }
+  }
+  
   @Override
   public void disabledPeriodic() {
     // // red --> 1, 2, 3

@@ -10,6 +10,7 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
@@ -19,7 +20,7 @@ import frc.robot.Constants;
 import frc.robot.RobotContainer;
 
 public class Vision extends SubsystemBase {
-  IndividualCam[] cameras = new IndividualCam[2];
+  IndividualCam[] cameras = new IndividualCam[4];
 
   private final SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(
     RobotContainer.m_swerve.getKinematics(), 
@@ -30,21 +31,27 @@ public class Vision extends SubsystemBase {
     VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30))
   );
 
-  public Vision(VisionIO cameraBL, VisionIO cameraBR) {
-    cameras[0] = new IndividualCam(cameraBL, 2);
-    cameras[1] = new IndividualCam(cameraBR, 3);
+  public Vision(VisionIO cameraFL, VisionIO cameraFR, VisionIO cameraBL, VisionIO cameraBR) {
+    cameras[0] = new IndividualCam(cameraFL, 0);
+    cameras[1] = new IndividualCam(cameraFR, 1);
+    cameras[2] = new IndividualCam(cameraBL, 2);
+    cameras[3] = new IndividualCam(cameraBR, 3);
+  }
+
+  public void setPose(Pose2d pose) {
+    poseEstimator.resetPosition(pose.getRotation(), RobotContainer.m_swerve.getModulePos(), pose);
   }
 
   @Override
   public void periodic() {
     poseEstimator.update(RobotContainer.m_swerve.getRotation(), RobotContainer.m_swerve.getModulePos());
 
-    for (var camera : cameras) {
-      if (camera.getCameraInputs().botpose.length > 0) {
-        poseEstimator.addVisionMeasurement(camera.getCameraPose(), Timer.getFPGATimestamp() - (camera.getCameraInputs().botpose_wpired[6] / 1000.0));
+    for (int i = 2; i < 4; i++) {
+      if (cameras[i].getCameraInputs().botpose[0] != 0 && Math.abs(cameras[i].getCameraInputs().camerapose_targetspace[2]) < 2.5 ) {
+        poseEstimator.addVisionMeasurement(cameras[i].getCameraPose(), Timer.getFPGATimestamp() - (cameras[i].getCameraInputs().botpose_wpired[6] / 1000.0));
       }
     }
-  }
+  } 
 
   @AutoLogOutput(key = "Vision/EstimatedPose2d")
   public Pose2d getEstimatedPose() {

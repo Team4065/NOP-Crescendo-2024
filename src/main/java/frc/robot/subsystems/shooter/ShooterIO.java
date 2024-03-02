@@ -27,4 +27,6 @@ public interface ShooterIO {
     public default void setIntakeVoltage(double volts) {}
     
     public default void setShooterVoltage(double volts) {}
+
+    public default void setIntakeRevs(double revs) {}
 }

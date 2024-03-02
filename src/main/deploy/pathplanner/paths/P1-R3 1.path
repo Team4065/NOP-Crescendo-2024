@@ -3,59 +3,37 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.72,
-        "y": 4.29
+        "x": 0.6933452953924437,
+        "y": 4.321298685393376
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.1852004303152672,
-        "y": 3.7943110408332084
+        "x": 1.1819673987992738,
+        "y": 3.931007255138619
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 4.23,
-        "y": 1.96
+        "x": 2.3445732483476367,
+        "y": 4.087081954477746
       },
       "prevControl": {
-        "x": 3.264692984023937,
-        "y": 2.5279633482077797
-      },
-      "nextControl": {
-        "x": 5.272282384793014,
-        "y": 1.346746202764874
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 7.708136386315569,
-        "y": 0.772915212021579
-      },
-      "prevControl": {
-        "x": 7.213360949098016,
-        "y": 0.772915212021579
+        "x": 1.8497978111300832,
+        "y": 4.087081954477746
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "ring 5"
+      "linkedName": null
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 2.0,
-      "rotationDegrees": 0,
-      "rotateFast": true
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [
     {
       "name": "Deploy Intake",
-      "waypointRelativePos": 1.1,
+      "waypointRelativePos": 0.45,
       "command": {
         "type": "sequential",
         "data": {
@@ -69,11 +47,34 @@
           ]
         }
       }
+    },
+    {
+      "name": "init",
+      "waypointRelativePos": 0,
+      "command": {
+        "type": "sequential",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "retract"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "shoot"
+              }
+            }
+          ]
+        }
+      }
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 4.17,
-    "maxAcceleration": 3.5,
+    "maxVelocity": 3.1,
+    "maxAcceleration": 3.1,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
@@ -85,5 +86,5 @@
   "reversed": false,
   "folder": null,
   "previewStartingState": null,
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

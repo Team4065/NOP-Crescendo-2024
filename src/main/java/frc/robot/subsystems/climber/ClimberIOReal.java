@@ -8,8 +8,10 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import frc.robot.Constants;
 
 public class ClimberIOReal implements ClimberIO {
@@ -17,8 +19,9 @@ public class ClimberIOReal implements ClimberIO {
     TalonFX leftTelescopeMotor = new TalonFX(Constants.ClimberConstants.leftTelescopeCANID, "rio");
 
     Compressor compressorPCM = new Compressor(Constants.ClimberConstants.pcmCANID, PneumaticsModuleType.REVPH);
-    Solenoid rightRatchet = new Solenoid(Constants.ClimberConstants.pcmCANID, PneumaticsModuleType.REVPH, Constants.ClimberConstants.rightRatchetPort);
-    Solenoid leftRatchet = new Solenoid(Constants.ClimberConstants.pcmCANID, PneumaticsModuleType.REVPH, Constants.ClimberConstants.leftRatchetPort);
+    // DoubleSolenoid ratchet = new DoubleSolenoid(PneumaticsModuleType.REVPH, 1, 0);
+    Solenoid right = new Solenoid(Constants.ClimberConstants.pcmCANID, PneumaticsModuleType.REVPH, 0);
+    Solenoid left = new Solenoid(Constants.ClimberConstants.pcmCANID, PneumaticsModuleType.REVPH, 1);
 
     private final StatusSignal<Double> rightTelePosRad;
     private final StatusSignal<Double> rightTeleVelc;
@@ -34,12 +37,12 @@ public class ClimberIOReal implements ClimberIO {
         var configClockwise = new MotorOutputConfigs();
         configClockwise.Inverted = InvertedValue.Clockwise_Positive;
 
-        configClockwise.NeutralMode = NeutralModeValue.Coast;
+        configClockwise.NeutralMode = NeutralModeValue.Brake;
         rightTelescopeMotor.getConfigurator().apply(configClockwise);
 
         var configCounterClockwise = new MotorOutputConfigs();
-        configClockwise.NeutralMode = NeutralModeValue.Coast;
-        configClockwise.Inverted = InvertedValue.CounterClockwise_Positive;
+        configCounterClockwise.NeutralMode = NeutralModeValue.Brake;
+        configCounterClockwise.Inverted = InvertedValue.Clockwise_Positive;
 
         leftTelescopeMotor.getConfigurator().apply(configCounterClockwise);
 
@@ -69,11 +72,12 @@ public class ClimberIOReal implements ClimberIO {
         leftTelescopeMotor.optimizeBusUtilization();
 
         // compressorPCM.enableHybrid(50, 60);
+        compressorPCM.enableDigital();
 
 
         // TRUE = MOTOR MOVEMENT, FALSE = NO MOTOR MOVEMENT
-        rightRatchet.set(true);
-        leftRatchet.set(!(true));
+        // ratchet.set(Value.kForward);
+        setRatchet(true);
     }
 
     @Override
@@ -100,22 +104,19 @@ public class ClimberIOReal implements ClimberIO {
         inputs.leftTelescopeCurrentAmps = leftTeleCurrAmp.getValueAsDouble();
 
         inputs.compressorPSI = compressorPCM.getPressure();
-        inputs.rightTelescopeRatchet = rightRatchet.get();
-        inputs.leftTelescopeRatchet = leftRatchet.get();
+        inputs.rightTelescopeRatchet = false;
+        inputs.leftTelescopeRatchet = false;
     }
 
     @Override
     public void setSpeed(double speed) {
-        rightRatchet.set((speed <= 0 ? false : true));
-        leftRatchet.set((speed <= 0 ? false : true));
-
         rightTelescopeMotor.set(speed);
         leftTelescopeMotor.set(speed);
     }
 
     @Override
     public void setRatchet(boolean state) {
-        rightRatchet.set(state);
-        leftRatchet.set(!state);
+        right.set(state);
+        left.set(!state);
     }
 }

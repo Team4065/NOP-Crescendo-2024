@@ -4,21 +4,16 @@
 
 package frc.robot.commands.climber;
 
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import edu.wpi.first.wpilibj2.command.button.POVButton;
-import frc.robot.Robot;
 import frc.robot.RobotContainer;
 
-public class RaiseClimber extends Command {
-  /** Creates a new RaiseClimber. */
-  boolean end;
-  double speed;
-  public RaiseClimber(double speed) {
-    // Use addRequirements() here to declare subsystem dependencies.
-    this.speed = speed;
+public class ActivateRatchet extends Command {
+  /** Creates a new ActivateRatchet. */
+  boolean end, activateRatchet;
+  public ActivateRatchet(boolean activateRatchet) {
+    this.activateRatchet = activateRatchet;
     addRequirements(RobotContainer.m_climber);
+    // Use addRequirements() here to declare subsystem dependencies.
   }
 
   // Called when the command is initially scheduled.
@@ -30,7 +25,7 @@ public class RaiseClimber extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    RobotContainer.m_climber.setSpeed(speed);
+    RobotContainer.m_climber.setRatchet(!activateRatchet);
     end = true;
   }
 

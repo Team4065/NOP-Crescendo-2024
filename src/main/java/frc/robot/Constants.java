@@ -41,23 +41,26 @@ public final class Constants {
 
   public static class FieldConstants {
     public static final AprilTagFieldLayout tagLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
-    public static final Translation2d blueSpeakerReferencePoint = new Translation2d(0, 5.475);
+    public static final Translation2d blueSpeakerReferencePoint = new Translation2d(Units.inchesToMeters(36.179), 5.475);
   }
 
   public static final Orchestra shush = new Orchestra();
+
+  public static final int ledPWMPort = 9;
+  public static final int ledLength = 75;
 
   public static final Field2d displayField = new Field2d();
   public static final HashMap<Command, String> autoRoutines = new HashMap<>(); // HashMap to find the auto name based on what command is selected in SendableChooser
 
   public static class SwerveConstants {
     public static final double DRIVE_GEAR_RATIO = 8.14;
-    public static final double TURN_GEAR_RATIO = 150 / 7;
+    public static final double TURN_GEAR_RATIO = 150.0 / 7.0;
 
     public static final int encoderTicks = 2048; // Encoder ticks for CanCoder and REV Encoder 
 
-    public static final double wheel_radius_meters = Units.inchesToMeters(4);
+    public static final double wheel_radius_meters = Units.inchesToMeters(2);
 
-    public static final double MAX_SPEED_FEET = 15;
+    public static final double MAX_SPEED_FEET = Units.metersToFeet(3.1);
 
     public static class ModuleConstants {
       // FRONT LEFT

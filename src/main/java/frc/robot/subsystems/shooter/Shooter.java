@@ -28,11 +28,19 @@ public class Shooter extends SubsystemBase {
     io.setShooterVoltage(volts);
   }
 
+  public double getShooterVelc() {
+    return shooterInputs.topRollerVelocityRadPerSec;
+  }
+
   public void setIntakeVoltage(double volts) {
     io.setIntakeVoltage(volts);
   }
 
   public boolean getBeamBreak() {
     return shooterInputs.beamBreak;
+  }
+
+  public void goBackWards() {
+    
   }
 }

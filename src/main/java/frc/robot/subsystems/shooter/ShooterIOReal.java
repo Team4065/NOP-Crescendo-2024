@@ -5,6 +5,9 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.SparkPIDController;
+import com.revrobotics.CANSparkBase.ControlType;
+import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -16,6 +19,8 @@ public class ShooterIOReal implements ShooterIO {
 
     CANSparkMax intakeMotor = new CANSparkMax(Constants.ShooterConstants.intakeMotorCANID, MotorType.kBrushless);
     DigitalInput beamBreak = new DigitalInput(Constants.ShooterConstants.beamBreakDIO);
+
+    SparkPIDController intakePID = intakeMotor.getPIDController();
 
 
     private final StatusSignal<Double> topRollerPosRad;
@@ -55,6 +60,12 @@ public class ShooterIOReal implements ShooterIO {
 
         topRollerMotor.optimizeBusUtilization();
         bottomRollerMotor.optimizeBusUtilization();
+
+        intakePID.setP(0.1);
+        intakePID.setI(0);
+        intakePID.setD(0);
+
+        intakePID.setOutputRange(-12, 12);
     }
 
     @Override
@@ -96,5 +107,11 @@ public class ShooterIOReal implements ShooterIO {
     @Override
     public void setIntakeVoltage(double volts) {
         intakeMotor.setVoltage(volts);
+    }
+
+    @Override
+    public void setIntakeRevs(double revs) {
+        intakeMotor.getEncoder().setPosition(0);
+        intakePID.setReference(5, ControlType.kPosition);
     }
 }

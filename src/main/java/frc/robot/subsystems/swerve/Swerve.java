@@ -20,9 +20,11 @@ import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.swerve.modules.Module;
 import frc.robot.subsystems.swerve.modules.ModuleIO;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -36,11 +38,11 @@ import com.pathplanner.lib.util.ReplanningConfig;
 
 public class Swerve extends SubsystemBase {
 
-  static final double max_drive_speed = Units.feetToMeters(Constants.SwerveConstants.MAX_SPEED_FEET);
+  private double max_drive_speed = Units.feetToMeters(Constants.SwerveConstants.MAX_SPEED_FEET);
   static final double track_width_x = Units.inchesToMeters(28);
   static final double track_width_y = Units.inchesToMeters(28);
   static final double drivetrain_radius = Math.hypot(track_width_x / 2, track_width_y / 2);
-  static final double max_angular_speed = max_drive_speed / drivetrain_radius;
+  private double max_angular_speed = max_drive_speed / drivetrain_radius;
 
   final GyroIO gyroIO;
   final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
@@ -64,8 +66,8 @@ public class Swerve extends SubsystemBase {
 
     // Configure PathPlanner
     AutoBuilder.configureHolonomic(
-      this::getPose,
-      this::setPose,
+      this::getFusedOdometry,
+      this::setFusedOdometry,
       () -> kinematics.toChassisSpeeds(getModuleStates()),
       this::runVelc,
       new HolonomicPathFollowerConfig(
@@ -73,10 +75,10 @@ public class Swerve extends SubsystemBase {
         drivetrain_radius,
         new ReplanningConfig()
       ),
-      () -> (Robot.allianceColor == "BLUE") ? false : true,
+      () -> DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red,
       this
-    );   
-    
+    );
+        
     PathPlannerLogging.setLogActivePathCallback((activePath) -> {
       // Log the active path in AdvantageKit
       Logger.recordOutput("Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
@@ -90,7 +92,7 @@ public class Swerve extends SubsystemBase {
 
     switch (Constants.currentMode) {
       case REAL: 
-        headingPID = new PIDController(0, 0, 0);
+        headingPID = new PIDController(2, 0, 0);
         break;
       
       case SIM:
@@ -103,6 +105,14 @@ public class Swerve extends SubsystemBase {
     }
 
     headingPID.enableContinuousInput(-Math.PI, Math.PI);
+  }
+
+  public Pose2d getFusedOdometry() {
+    return RobotContainer.m_vision.getEstimatedPose();
+  }
+
+  public void setFusedOdometry(Pose2d pose) {
+    RobotContainer.m_vision.setPose(pose);
   }
 
   @Override
@@ -154,20 +164,20 @@ public class Swerve extends SubsystemBase {
     Logger.recordOutput("Odometry/Robot", getPose());
 
     Constants.displayField.setRobotPose(getPose());
+    Logger.recordOutput("Odometry/SpeakerDistance", getDistanceFromSpeaker("blue"));
   }
 
   public SwerveModulePosition[] getModulePos() {
     SwerveModulePosition[] modulePos = new SwerveModulePosition[4];
 
     for (int i = 0; i < 4; i++) {
-      modulePos[i] = modules[i].getPosDelta();
+      modulePos[i] = modules[i].getModulePos();
     }
     
     return modulePos;
   }
 
   // Your field-relative control
-
   public void runVelc(ChassisSpeeds speeds) {
     ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
 
@@ -201,18 +211,44 @@ public class Swerve extends SubsystemBase {
   public double getHeadingSetpoint() {
     return headingPID.getSetpoint();
   }
+  
+  public double distanceFormula(Pose2d point1, Pose2d point2) {
+    double xPos1 = point1.getX();
+    double yPos1 = point1.getY();
+
+    double xPos2 = point2.getX();
+    double yPos2 = point2.getY();
+
+    return Math.sqrt(Math.pow(xPos2 - xPos1, 2) + Math.pow(yPos2 - yPos1, 2));
+  }
+
+  public double getDistanceFromSpeaker(String allianceColor) {
+    switch (allianceColor) {
+      case "blue":
+        return distanceFormula(
+          new Pose2d(
+            Constants.FieldConstants.blueSpeakerReferencePoint.getX(),
+            Constants.FieldConstants.blueSpeakerReferencePoint.getY(),
+            new Rotation2d()
+          ),
+          pose
+        );
+      case "red":
+        return 0;
+      default:
+        return 0;
+    }
+  }
+
+  public void setSpeed(double max_speed_feet) {
+    max_drive_speed = Units.feetToMeters(max_speed_feet);
+    max_angular_speed = max_drive_speed / drivetrain_radius;
+  }
 
   @AutoLogOutput(key = "Swerve/AutoAimingAngle")
   public double getAutoAimingAngle() {
-    // double currentPoseX = pose.getX();
-    // double currentPoseY = pose.getY();
-    
-    // double referenceX = Constants.FieldConstants.blueSpeakerReferencePoint.getX();
-    // double referenceY = Constants.FieldConstants.blueSpeakerReferencePoint.getY();
-
-    // return Math.tan(currentPoseY - referenceY / currentPoseX - referenceX); // Angle in radians
     Translation2d robotTranslation = pose.getTranslation();
-    Translation2d speakerVector = robotTranslation.minus(Constants.FieldConstants.blueSpeakerReferencePoint);
+    Translation2d speakerVector = robotTranslation.minus(new Translation2d(0, Constants.FieldConstants.blueSpeakerReferencePoint.getY()));
 
     return speakerVector.getAngle().getRadians();
   }
@@ -266,11 +302,6 @@ public class Swerve extends SubsystemBase {
     return pose;
   }
 
-
-  @AutoLogOutput(key = "Odometry/Robot3d")
-  public Pose3d getPose3d() {
-    return new Pose3d(pose.getX(), pose.getY(), Units.inchesToMeters(21), new Rotation3d(0, 0, pose.getRotation().getRadians()));
-  }
 
   public SwerveDriveKinematics getKinematics() {
     return kinematics;

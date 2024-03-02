@@ -1,0 +1,15 @@
+{
+  "NTProvider": {
+    "types": {
+      "/AdvantageKit/RealOutputs/Elevator/Mechanism2d": "Mechanism2d",
+      "/FMSInfo": "FMSInfo",
+      "/Shuffleboard/Autonomous/Field": "Field2d",
+      "/Shuffleboard/Autonomous/SendableChooser[0]": "String Chooser",
+      "/SmartDashboard/Auto Chooser": "String Chooser",
+      "/SmartDashboard/VisionSystemSim-main/Sim Field": "Field2d"
+    }
+  },
+  "NetworkTables Info": {
+    "visible": true
+  }
+}

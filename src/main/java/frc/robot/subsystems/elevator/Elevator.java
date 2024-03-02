@@ -18,6 +18,8 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 import static edu.wpi.first.units.MutableMeasure.mutable;
 
@@ -101,13 +103,7 @@ public class Elevator extends SubsystemBase {
       For example the arm is at 90 degrees and is fully extended, 
       we want the arm to go down a certain point then start tilting back.
     Maintains the COG
-  */
-  private boolean extensionThresholdEnabled = false;
-  private double extensionThreshold;
-
-  String activationLevel;
-  
-  String currentState = "in";
+  */  
 
   public Elevator(ElevatorIO io) {
     this.io = io;
@@ -117,15 +113,15 @@ public class Elevator extends SubsystemBase {
         extensionProfiledPIDControl = new ProfiledPIDController(41, 0, 0.15, new TrapezoidProfile.Constraints(2, 2));
         extensionFeedforward = new ElevatorFeedforward(0.10077, 0.26093, 9.7355, 0.10116);
 
-        tiltPIDControl = new ProfiledPIDController(0.1, 0, 0, new TrapezoidProfile.Constraints(50, 100), 0.01);
-        tiltFeedfoward = new ArmFeedforward(0.17277, 0.3864, 0.041776, 0.0023621);
+        tiltPIDControl = new ProfiledPIDController(1.8, 0, 0, new TrapezoidProfile.Constraints(40, 50));
+        tiltFeedfoward = new ArmFeedforward(0.13857, 0.040253, 0.10339, 0.0058069);
 
         break;
       case SIM:
         extensionProfiledPIDControl = new ProfiledPIDController(40, 0, 0, new TrapezoidProfile.Constraints(2.6, 2.6));
         extensionFeedforward = new ElevatorFeedforward(0.0, 0.762, 1, 0.0);
 
-        tiltPIDControl = new ProfiledPIDController(125, 0, 0, null);
+        tiltPIDControl = new ProfiledPIDController(125, 0, 0, new TrapezoidProfile.Constraints(40, 50));
         tiltFeedfoward = new ArmFeedforward(0, 0, 0, 0);
 
         break;
@@ -133,7 +129,7 @@ public class Elevator extends SubsystemBase {
         extensionProfiledPIDControl = new ProfiledPIDController(0, 0, 0, new TrapezoidProfile.Constraints(2.6, 2.6));
         extensionFeedforward = new ElevatorFeedforward(0.0, 0.0, 0, 0.0);
 
-        tiltPIDControl = new ProfiledPIDController(0, 0, 0, null);
+        tiltPIDControl = new ProfiledPIDController(0, 0, 0, new TrapezoidProfile.Constraints(40, 50));
         tiltFeedfoward = new ArmFeedforward(0, 0, 0, 0);
 
         break;
@@ -155,8 +151,6 @@ public class Elevator extends SubsystemBase {
     io.updateInputs(elevatorInputs);
     Logger.processInputs("Elevator", elevatorInputs);
 
-    extensionProfiledPIDControl.setGoal(Units.inchesToMeters(extensionGoal));
-
     double extensionFeedback = extensionProfiledPIDControl.calculate(elevatorInputs.elevatorEncoder);
     double extensionFeedforwardVal = extensionFeedforward.calculate(extensionProfiledPIDControl.getSetpoint().velocity);
 
@@ -167,18 +161,15 @@ public class Elevator extends SubsystemBase {
     io.setElevatorVoltage(extensionFeedback + extensionFeedforwardVal);
 
 
-
-
-    double tiltFeedback = tiltPIDControl.calculate(elevatorInputs.absoluteDeg);
-    double tiltFeedfowardVal = tiltFeedfoward.calculate(Units.degreesToRadians(tiltPIDControl.getSetpoint().position), tiltPIDControl.getSetpoint().velocity);
-
     if (elevatorInputs.tiltReached) {
-      io.setTiltMotorEncoderValue(-6);
+      io.setTiltMotorEncoderValue(-5);
     }
-    
+
+    double tiltFeedback = tiltPIDControl.calculate(elevatorInputs.rightTiltPositionRad);
+    double tiltFeedfowardVal = tiltFeedfoward.calculate(tiltPIDControl.getSetpoint().position, tiltPIDControl.getSetpoint().velocity);
+
     io.setTiltVoltage(tiltFeedback + tiltFeedfowardVal);
     
-        
 
     updateTelemetry();
   }
@@ -219,21 +210,21 @@ public class Elevator extends SubsystemBase {
 
   // private final MutableMeasure<Voltage> m_appliedTiltVoltage = mutable(Volts.of(0));
   // // Mutable holder for unit-safe linear distance values, persisted to avoid reallocation.
-  // private final MutableMeasure<Angle> m_angle = mutable(Degrees.of(0));
+  // private final MutableMeasure<Angle> m_angle = mutable(Rotations.of(0));
   // // Mutable holder for unit-safe linear velocity values, persisted to avoid reallocation.
-  // private final MutableMeasure<Velocity<Angle>> m_velocityAngle = mutable(DegreesPerSecond.of(0));
+  // private final MutableMeasure<Velocity<Angle>> m_velocityAngle = mutable(RotationsPerSecond.of(0));
 
   // public SysIdRoutine angleRoutine = new SysIdRoutine(
   //   new SysIdRoutine.Config(null, Volts.of(3.5), null),
   //   new Mechanism(
   //     (Measure<Voltage> volts) -> {
-  //       this.setTiltVoltage(volts.in(Volts));
+  //       io.setTiltVoltage(volts.in(Volts));
   //     }, 
   //     log -> {
   //       log.motor("tilt")
   //       .voltage(m_appliedTiltVoltage.mut_replace(this.getTiltAppliedVoltage(), Volts))
-  //       .angularPosition(m_angle.mut_replace(elevatorInputs.absoluteDeg, Degrees))
-  //       .angularVelocity(m_velocityAngle.mut_replace(elevatorInputs.leftTiltVelocityRadPerSec, DegreesPerSecond));
+  //       .angularPosition(m_angle.mut_replace(elevatorInputs.rightTiltPositionRad, Degrees))
+  //       .angularVelocity(m_velocityAngle.mut_replace(elevatorInputs.rightTiltVelocityRadPerSec, DegreesPerSecond));
   //     }, 
   //     this
   //   )
@@ -282,13 +273,14 @@ public class Elevator extends SubsystemBase {
     return elevatorInputs.elevatorEncoder;
   }
 
-  public void reachExtension(double extensionInches) {
-    extensionProfiledPIDControl.setGoal(extensionInches);
+  public void reachExtension(double extensionMeter) {
+    extensionGoal = extensionMeter;
+    extensionProfiledPIDControl.setGoal(extensionGoal);
   }
 
-  public void setAngle(double angleToSet) {
-    tiltAngleSetPointDeg = angleToSet;
-    tiltPIDControl.setGoal(angleToSet);
+  public void setAngle(double angleToSetDeg) {
+    tiltAngleSetPointDeg = angleToSetDeg;
+    tiltPIDControl.setGoal(((tiltAngleSetPointDeg + 5) / 2.42) - 2.222);
   }
 
   @AutoLogOutput(key = "Elevator/TiltGoal")
@@ -307,7 +299,7 @@ public class Elevator extends SubsystemBase {
   }
   
   public Pose3d[] getPoses3d() {
-    Rotation3d angleRot = new Rotation3d(0, getTiltAngle(), 0);
+    Rotation3d angleRot = new Rotation3d(0, Units.degreesToRadians(getTiltAngle()), 0);
     Pose3d basePose = new Pose3d(Units.inchesToMeters(-9.6), 0, Units.inchesToMeters(11), angleRot);
     Pose3d extensionPose = basePose.transformBy(new Transform3d(new Translation3d(getEleLength(), 0, 0), new Rotation3d()));
 
@@ -318,9 +310,9 @@ public class Elevator extends SubsystemBase {
     return posesToReturn;
   }
   
-  public void reachTarget(double angle, double extensionFeet) {
-    tiltAngleSetPointDeg = angle;
-    extensionProfiledPIDControl.setGoal(Units.feetToMeters(extensionFeet));
+  public void reachTarget(double angleDeg, double extensionMeter) {
+    setAngle(angleDeg);
+    reachExtension(extensionMeter);
   }
 
   public void setExtensionVoltage(double volts) {
@@ -337,32 +329,16 @@ public class Elevator extends SubsystemBase {
 
   public void reachState(String state) {
     switch (state) {
-      case "in":
-        extensionThresholdEnabled = false;
-        reachTarget(10, 0);
-        currentState = "in";
+      case "in":      
+        reachTarget(13, 0);
 
         break;
       case "intake":
-        extensionThresholdEnabled = false;
-
-        if (currentState == "in") {
-          activationLevel = "above";
-          extensionThreshold = 0.19;
-        } else {
-          activationLevel = "below";
-          extensionThreshold = 0.2;
-        }
-        
-        extensionThresholdEnabled = true;
-        reachTarget(-4, 0.6);  
-        currentState = "intake";
+        reachTarget(-3, Units.inchesToMeters(9));
 
         break;
       case "amp":
-        extensionThresholdEnabled = false;
-        reachTarget(90, 1);
-        currentState = "amp";
+        reachTarget(89, Units.inchesToMeters(4));
         
         break;
       default:

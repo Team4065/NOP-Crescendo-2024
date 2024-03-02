@@ -7,6 +7,7 @@ package frc.robot.subsystems.vision;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -16,6 +17,8 @@ import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
@@ -49,6 +52,7 @@ public class IndividualCam extends SubsystemBase {
     camera.updateInputs(cameraInputs);
     Logger.processInputs("Vision/Camera" + Integer.toString(index), cameraInputs);
     Logger.recordOutput("Vision/Cameras" + Integer.toString(index) + "/PoseEstimation", getCameraPose());
+    Logger.recordOutput("Vision/Cameras" + Integer.toString(index) + "/NoteEstimatedPose", getEstimatedNotePose());
 
     List<Pose3d> detectedTagPoses = getTagPoses();
 
@@ -58,7 +62,7 @@ public class IndividualCam extends SubsystemBase {
   public List<Pose3d> getTagPoses() {
     List<Pose3d> detectedTagPoses = new ArrayList<>();
     // for (int i = 0; i < VisionSimIO.results.getTargets().size(); i++) {
-    //   detectedTagPoses.add(Constants.tagLayout.getTagPose(VisionSimIO.results.getTargets().get(i).getFiducialId()).get());
+    //   detectedTagPoses.add(Constants.FieldConstants.tagLayout.getTagPose(VisionSimIO.results.getTargets().get(i).getFiducialId()).get());
     // }
 
     return detectedTagPoses;
@@ -133,25 +137,37 @@ public class IndividualCam extends SubsystemBase {
     }
   }
 
-  public double getDistanceFromGoal() {
+  public double getNoteDistance() {
     double targetOffsetAngle_Vertical = cameraInputs.verticalCrosshairOffset;
 
     // how many degrees back is your limelight rotated from perfectly vertical?
-    // CHECK
-    double limelightMountAngleDegrees = 0;
+    double limelightMountAngleDegrees = 10; 
 
     // distance from the center of the Limelight lens to the floor
-    // CHANGE how high up it is
-    double limelightLensHeightInches = 12.0;
+    double limelightLensHeightInches = 8; 
 
     // distance from the target to the floor
-    double goalHeightInches = 104.0;
+    double goalHeightInches = 1; 
 
     double angleToGoalDegrees = limelightMountAngleDegrees + targetOffsetAngle_Vertical;
     double angleToGoalRadians = angleToGoalDegrees * (3.14159 / 180.0);
 
-    // calculate distance
-    return (goalHeightInches - limelightHeightInches) / Math.tan(angleToGoalRadians);
+    //calculate distance
+    double distanceFromLimelightToGoalInches = (goalHeightInches - limelightLensHeightInches) / Math.tan(angleToGoalRadians);
+    return distanceFromLimelightToGoalInches;
+  }
+
+  public Pose3d getEstimatedNotePose() {
+    if (index == 0) {
+      double noteDistance = getNoteDistance();
+      double theta = 90 - cameraInputs.horizontalCrosshairOffset;
+      double estimatedY = Math.sin(theta) * noteDistance;
+      double estimatedX = Math.cos(theta) * noteDistance;
+
+      return new Pose3d(RobotContainer.m_swerve.getPose().transformBy(new Transform2d(new Translation2d(Units.inchesToMeters(estimatedX), Units.inchesToMeters(estimatedY)), new Rotation2d())));
+    } else {
+      return new Pose3d();
+    }
   }
 
   public enum Pipeline {
@@ -263,7 +279,7 @@ public class IndividualCam extends SubsystemBase {
 
   public Pose2d getCameraPose() {
     if (cameraInputs.botpose_wpiblue.length > 0) {
-      return new Pose2d(cameraInputs.botpose_wpiblue[0], cameraInputs.botpose_wpiblue[1], new Rotation2d(Units.degreesToRadians(cameraInputs.botpose_wpired[5])));
+      return new Pose2d(cameraInputs.botpose_wpiblue[0], cameraInputs.botpose_wpiblue[1], new Rotation2d(Units.degreesToRadians(cameraInputs.botpose_wpiblue[5])));
     } else {
       return new Pose2d();
     }

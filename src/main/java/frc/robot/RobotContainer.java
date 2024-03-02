@@ -6,6 +6,10 @@ package frc.robot;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
+
 import static edu.wpi.first.units.Units.Volts;
 
 import java.util.function.Consumer;
@@ -20,18 +24,23 @@ import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj.util.WPILibVersion;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import frc.robot.commands.FeedForwardCharacterization;
+import frc.robot.commands.climber.ActivateRatchet;
 import frc.robot.commands.climber.RaiseClimber;
 import frc.robot.commands.elevator.ReachState;
 import frc.robot.commands.elevator.ReachTilt;
 import frc.robot.commands.shooter.SetIntakeSpeed;
 import frc.robot.commands.shooter.SetShooterSpeed;
 import frc.robot.commands.swerve.ResetOdo;
+import frc.robot.commands.swerve.SetSpeed;
 import frc.robot.commands.swerve.SwerveControl;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.climber.ClimberIO;
@@ -40,6 +49,7 @@ import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
 import frc.robot.subsystems.elevator.ElevatorIOTalonFX;
+import frc.robot.subsystems.leds.LEDs;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOReal;
@@ -52,6 +62,7 @@ import frc.robot.subsystems.swerve.modules.ModuleIOSim;
 import frc.robot.subsystems.swerve.modules.ModuleIOTalonFX;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionLimelight;
 import frc.robot.subsystems.vision.VisionSimIO;
 import frc.robot.util.AutoCommandBuilder;
 import frc.robot.util.NoteVisualizer;
@@ -66,6 +77,7 @@ public class RobotContainer {
   public static Elevator m_elevator;
   public static Shooter m_shooter;
   public static Climber m_climber;
+  // public static LEDs leds;
 
   public static PowerDistribution pdh;
 
@@ -104,8 +116,10 @@ public class RobotContainer {
         );
 
         m_vision = new Vision(
-          new VisionIO() {},
-          new VisionIO() {}
+          new VisionLimelight("limelight-nopfl"),
+          new VisionLimelight("limelight-nopfr"),
+          new VisionLimelight("limelight-nopbl"),
+          new VisionLimelight("limelight-nopbr")
         );
 
         m_shooter = new Shooter(
@@ -119,6 +133,8 @@ public class RobotContainer {
         m_climber = new Climber(
           new ClimberIOReal()
         );
+
+        // leds = new LEDs();
 
         pdh = new PowerDistribution(Constants.pdhCANID, ModuleType.kRev);
         pdh.setSwitchableChannel(true);
@@ -135,6 +151,8 @@ public class RobotContainer {
         m_elevator = new Elevator(new ElevatorIOSim());
 
         m_vision = new Vision(
+          new VisionIO() {},
+          new VisionIO() {},
           new VisionSimIO(
             m_swerve::getPose,
             Constants.LimelightPositions.camPosBL,
@@ -163,6 +181,8 @@ public class RobotContainer {
 
         m_vision = new Vision(
           new VisionIO() {},
+          new VisionIO() {},
+          new VisionIO() {},
           new VisionIO() {}
         );
 
@@ -178,11 +198,14 @@ public class RobotContainer {
 
     NoteVisualizer.setRobotPoseSupplier(() -> RobotContainer.m_swerve.getPose());
 
-    NamedCommands.registerCommand("deploy", new ReachState("intake"));
+    NamedCommands.registerCommand("shoot", new SetShooterSpeed(6));
+    NamedCommands.registerCommand("stop", new SequentialCommandGroup(new SetShooterSpeed(0), new SetIntakeSpeed(0)));
+    NamedCommands.registerCommand("deploy", new SequentialCommandGroup(new ReachState("intake"), new SetIntakeSpeed(5)));
     NamedCommands.registerCommand("retract", new ReachState("in"));
 
     m_chooser.addDefaultOption("NOTHING", noAutoCommand);
-    m_chooser.addOption("P1 - 3R", AutoCommandBuilder.returnAutoCommand("Pos 1 - 3 rings"));
+    m_chooser.addOption("P1 - 3R", AutoCommandBuilder.returnAutoCommand("Test"));
+    m_chooser.addOption("Test", AutoCommandBuilder.returnAutoCommand("Test Auto"));
     Shuffleboard.getTab("Autonomous").add(m_chooser.getSendableChooser()).withSize(3, 1);
 
     configureBindings();
@@ -198,12 +221,16 @@ public class RobotContainer {
       () -> -controller.getRawAxis(4)
     ));
     
-    // rightBumper.whileTrue(new SwerveControl(
-    //   m_swerve, 
-    //   () -> -controller.getRawAxis(1), 
-    //   () -> -controller.getRawAxis(0), 
-    //   () -> MathUtil.clamp(m_swerve.getHeadingFeedback(new Rotation2d(m_swerve.getAutoAimingAngle())), -1, 1)
+    // rightBumper.whileTrue(new SequentialCommandGroup(
+    //   new SetSpeed(5),
+    //   new SwerveControl(
+    //     m_swerve, 
+    //     () -> -controller.getRawAxis(1), 
+    //     () -> -controller.getRawAxis(0), 
+    //     () -> MathUtil.clamp(m_swerve.getHeadingFeedback(new Rotation2d(m_swerve.getAutoAimingAngle())), -1, 1))
     // ));
+
+    // rightBumper.onFalse(new SetSpeed(10));
 
     /* AB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Stage Middle Finisher", AB));
     BB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Source Finisher 1", BB));
@@ -217,7 +244,6 @@ public class RobotContainer {
     AB.onTrue(new InstantCommand(() -> {m_elevator.setExtensionVoltage(-1);}));
     leftBumper.onTrue(new InstantCommand(() -> {m_elevator.setExtensionVoltage(0);}));
 
-    rightBumper.onTrue(new ResetOdo());
 
     upButton.onTrue(new SetShooterSpeed(8));
     downButton.onTrue(new SetShooterSpeed(0));
@@ -233,8 +259,30 @@ public class RobotContainer {
     // BB.whileTrue(m_elevator.angleRoutine.dynamic(Direction.kForward));
     // XB.whileTrue(m_elevator.angleRoutine.dynamic(Direction.kReverse));
 
-    // upButton.onTrue(new ReachTilt(45));
-    // downButton.onTrue(new ReachTilt(14));
+    leftButton.onTrue(new InstantCommand(() -> {RobotContainer.m_swerve.setPose(new Pose2d(new Translation2d(1.367, 5.542), new Rotation2d(0)));}));
+
+    YB.onTrue(new ReachState("amp"));
+    XB.onTrue(new ReachState("in"));
+    AB.onTrue(new SequentialCommandGroup(
+      new ReachState("intake"), 
+      new SetIntakeSpeed(5),
+      new InstantCommand(() -> {m_shooter.goBackWards();})
+    ));
+
+    leftBumper.onTrue(new SetShooterSpeed(6));
+    leftBumper.onFalse(new SetShooterSpeed(0));
+
+    leftButton.onTrue(new InstantCommand(() -> {RobotContainer.m_swerve.setPose(new Pose2d());}));
+
+    rightButton.onTrue(new InstantCommand(() -> {RobotContainer.m_shooter.setIntakeVoltage(-4);}));
+    rightButton.onFalse(new InstantCommand(() -> {RobotContainer.m_shooter.setIntakeVoltage(0);}));
+
+    upButton.onTrue(new SequentialCommandGroup(new ActivateRatchet(false), new WaitCommand(0.2), new RaiseClimber(0.4)));
+    upButton.onFalse(new SequentialCommandGroup(new RaiseClimber(0), new ActivateRatchet(true)));
+
+    downButton.onTrue(new SequentialCommandGroup(new ActivateRatchet(true), new RaiseClimber(-0.4)));
+    downButton.onFalse(new SequentialCommandGroup(new RaiseClimber(0), new ActivateRatchet(true)));
+
 
     // XB.onTrue(new InstantCommand(() -> {m_elevator.reachExtension(0);}));
     // YB.onTrue(new InstantCommand(() -> {m_elevator.reachExtension(8);}));
