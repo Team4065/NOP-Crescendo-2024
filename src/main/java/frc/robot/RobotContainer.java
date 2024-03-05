@@ -260,13 +260,13 @@ public class RobotContainer {
 
     // leftButton.onTrue(new InstantCommand(() -> {RobotContainer.m_swerve.setPose(new Pose2d(new Translation2d(1.367, 5.542), new Rotation2d(0)));}));
 
-    // YB.onTrue(new ReachState("amp", false, 0));
-    // XB.onTrue(new ReachState("in", false, 0));
-    // AB.onTrue(new SequentialCommandGroup(
-    //   new ReachState("intake", false, 0), 
-    //   new SetIntakeSpeed(5),
-    //   new InstantCommand(() -> {m_shooter.goBackWards();})
-    // ));
+    YB.onTrue(new ReachState("amp", false, 0));
+    XB.onTrue(new ReachState("in", false, 0));
+    AB.onTrue(new SequentialCommandGroup(
+      new ReachState("intake", false, 0), 
+      new SetIntakeSpeed(5),
+      new InstantCommand(() -> {m_shooter.goBackWards();})
+    ));
 
     // leftBumper.onTrue(new SetShooterSpeed(6, true, 50));
     // leftBumper.onFalse(new SetShooterSpeed(0,false, 0));
@@ -283,8 +283,8 @@ public class RobotContainer {
     // downButton.onFalse(new SequentialCommandGroup(new RaiseClimber(0), new ActivateRatchet(true)));
 
 
-    XB.onTrue(new InstantCommand(() -> {m_elevator.reachExtension(0);}));
-    YB.onTrue(new InstantCommand(() -> {m_elevator.reachExtension(Units.inchesToMeters(8));}));
+    // XB.onTrue(new InstantCommand(() -> {m_elevator.reachExtension(0);}));
+    // YB.onTrue(new InstantCommand(() -> {m_elevator.reachExtension(Units.inchesToMeters(8));}));
 
   }
 

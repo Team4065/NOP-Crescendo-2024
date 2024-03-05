@@ -38,6 +38,7 @@ public interface ElevatorIO {
         public double elevatorLinearVelocity = 0.0;
 
         public double tiltGoal = 0.0;
+        public double extensionGoal = 0.0;
 
         public boolean neturalModeButton = false;
         public boolean isBrakeMode = false;

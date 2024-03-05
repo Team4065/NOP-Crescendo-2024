@@ -109,7 +109,7 @@ public class Elevator extends SubsystemBase {
 
     switch (Constants.currentMode) {
       case REAL:
-        extensionProfiledPIDControl = new ProfiledPIDController(60, 0, 0, new TrapezoidProfile.Constraints(2, 2));
+        extensionProfiledPIDControl = new ProfiledPIDController(45, 0, 0, new TrapezoidProfile.Constraints(2, 2));
         extensionFeedforward = new ElevatorFeedforward(1.3378, 0.34237, 8.144, 0.10116);
 
         tiltPIDControl = new ProfiledPIDController(1.8, 0, 0, new TrapezoidProfile.Constraints(40, 50));
@@ -146,6 +146,16 @@ public class Elevator extends SubsystemBase {
     io.setBrakeMode(true);
   }
 
+  @AutoLogOutput(key = "Elevator/Feedback")
+  public double getFeedBack() {
+    return extensionProfiledPIDControl.calculate(elevatorInputs.elevatorEncoder);
+  }
+
+  @AutoLogOutput(key = "Elevator/Feedforward")
+  public double getFeedforward() {
+    return extensionFeedforward.calculate(extensionProfiledPIDControl.getSetpoint().velocity);
+  }
+
   @Override
   public void periodic() {
     io.updateInputs(elevatorInputs);
@@ -159,7 +169,12 @@ public class Elevator extends SubsystemBase {
       io.setExtensionEncoderValue(0);
     }
 
-    io.setElevatorVoltage(extensionFeedback + extensionFeedforwardVal);
+    if ((extensionFeedback + extensionFeedforwardVal) < 0 && elevatorInputs.elevatorLimitReached == true) {
+      io.setElevatorVoltage(0);
+    } else {  
+      io.setElevatorVoltage(extensionFeedback + extensionFeedforwardVal);
+    }
+
 
 
     if (elevatorInputs.tiltReached) {
@@ -277,6 +292,7 @@ public class Elevator extends SubsystemBase {
 
   public void reachExtension(double extensionMeter) {
     extensionGoal = extensionMeter;
+    double rotationsSetpoint = (Units.metersToInches(extensionMeter) * 33.69) / 14.75;
     extensionProfiledPIDControl.setGoal(extensionGoal);
   }
 

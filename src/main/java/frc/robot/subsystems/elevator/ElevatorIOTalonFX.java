@@ -8,6 +8,7 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.MotionMagicDutyCycle;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
@@ -25,7 +26,7 @@ import frc.robot.Constants;
 public class ElevatorIOTalonFX implements ElevatorIO {
     TalonFX rightTiltMotor;
     TalonFX leftTiltMotor;
-    TalonFX extensionMotor = new TalonFX(Constants.ElevatorConstants.extensionMotorCANID, "rio");
+    TalonFX extensionMotor;
 
     DigitalInput buttonState = new DigitalInput(Constants.ElevatorConstants.neutralModeButton);
 
@@ -45,20 +46,22 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     private final StatusSignal<Double> eleCurrAmp;
 
     private final StatusSignal<Double> tiltSetpoint;
+    private final StatusSignal<Double> extensionSetpoint;
 
     final MotionMagicVoltage tiltRequest = new MotionMagicVoltage(0);
-    final MotionMagicVoltage extensionRequest = new MotionMagicVoltage(0);
+    final MotionMagicDutyCycle extensionRequest = new MotionMagicDutyCycle(0);
 
     boolean isBrake;
 
     public ElevatorIOTalonFX() {
         rightTiltMotor = new TalonFX(Constants.ElevatorConstants.rightTiltMotorCANID, "rio");
         leftTiltMotor = new TalonFX(Constants.ElevatorConstants.leftTiltMotorCANID, "rio");
+        extensionMotor = new TalonFX(Constants.ElevatorConstants.extensionMotorCANID, "rio");
 
         leftTiltMotor.setControl(new Follower(rightTiltMotor.getDeviceID(), true));
 
         var commonMotorConfig = new TalonFXConfiguration();
-        commonMotorConfig.CurrentLimits.StatorCurrentLimit = 40.0;
+        commonMotorConfig.CurrentLimits.StatorCurrentLimit = 50.0;
         commonMotorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
         rightTiltMotor.getConfigurator().apply(commonMotorConfig);
@@ -88,7 +91,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         var feedbackConfigs = new TalonFXConfiguration();
 
         var slot0config = feedbackConfigs.Slot0;
-        slot0config.kS = 0.13857;
+        slot0config.kS = 0.13857;   
         slot0config.kG = 0.040253;
         slot0config.kV = 0.10339;
         slot0config.kA = 0.0058069;
@@ -101,7 +104,8 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         motionMagicConfigs.MotionMagicAcceleration = 108;
         motionMagicConfigs.MotionMagicJerk = 1600;
 
-        rightTiltMotor.getConfigurator().apply(feedbackConfigs); 
+        rightTiltMotor.getConfigurator().apply(feedbackConfigs);
+        
 
         isBrake = true;
 
@@ -121,6 +125,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         eleCurrAmp =  extensionMotor.getStatorCurrent();
 
         tiltSetpoint = rightTiltMotor.getClosedLoopReference();
+        extensionSetpoint = extensionMotor.getClosedLoopReference();
 
         BaseStatusSignal.setUpdateFrequencyForAll(
             50.0,
@@ -137,7 +142,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
             eleCurrAmp
         );
 
-        BaseStatusSignal.setUpdateFrequencyForAll(100, rightTiltPosRad, tiltSetpoint);
+        BaseStatusSignal.setUpdateFrequencyForAll(100, rightTiltPosRad, tiltSetpoint, extensionSetpoint);
 
         rightTiltMotor.optimizeBusUtilization();
         leftTiltMotor.optimizeBusUtilization();
@@ -160,7 +165,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
             eleCurrAmp
         );
 
-        BaseStatusSignal.refreshAll(rightTiltPosRad, tiltSetpoint);
+        BaseStatusSignal.refreshAll(rightTiltPosRad, tiltSetpoint, extensionSetpoint);
 
         inputs.absoluteDeg = (rightTiltPosRad.getValueAsDouble() + 2.2222) * 2.42 + -5;
         inputs.absoluteVelc = rightTiltPosRad.getValueAsDouble() * 2.42;
@@ -186,6 +191,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         inputs.elevatorCurrentAmps = eleCurrAmp.getValueAsDouble();
 
         inputs.tiltGoal = tiltSetpoint.getValueAsDouble();
+        inputs.extensionGoal = extensionSetpoint.getValueAsDouble();
 
         // TRUE -- NOT PRESSED, FALSE -- PRESSED
         inputs.neturalModeButton = buttonState.get();
@@ -219,8 +225,13 @@ public class ElevatorIOTalonFX implements ElevatorIO {
 
     @Override
     public void runTiltSetpoint(double rotSetpoint) {
-        // rightTiltMotor.setControl(tiltRequest.withPosition(rotSetpoint));
-        // leftTiltMotor.setControl(new Follower(rightTiltMotor.getDeviceID(), true));
+        rightTiltMotor.setControl(tiltRequest.withPosition(rotSetpoint));
+        leftTiltMotor.setControl(new Follower(rightTiltMotor.getDeviceID(), true));
+    }
+
+    @Override
+    public void runElevatorSetpoint(double rotExtension) {
+        // extensionMotor.setControl(extensionRequest.withPosition(rotExtension));
     }
 
     @Override

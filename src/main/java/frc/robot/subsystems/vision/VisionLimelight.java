@@ -55,7 +55,6 @@ public class VisionLimelight implements VisionIO {
         inputs.verticalSideLength = getValueDouble("tvert");
         inputs.pipelineIndex = getValueLong("getpipe");
         inputs.tid = getValueLong("tid");
-        inputs.jsonDump = getValueString("json");
         inputs.botpose = getValueDoubleArray("botpose");
         inputs.botpose_wpiblue = getValueDoubleArray("botpose_wpiblue");
         inputs.botpose_wpired = getValueDoubleArray("botpose_wpired");
@@ -70,10 +69,6 @@ public class VisionLimelight implements VisionIO {
         inputs.pipeline = getValueLong("pipeline");
         inputs.stream = getValueLong("stream");
         inputs.crop = getValueDoubleArray("crop");
-        var results = LimelightHelpers.getLatestResults(this.name);
-        if (results != null && results.targetingResults != null && results.targetingResults.valid) {
-            inputs.numTargets = results.targetingResults.targets_Fiducials.length;
-        }
     }
 
     /**
