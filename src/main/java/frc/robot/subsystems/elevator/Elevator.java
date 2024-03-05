@@ -9,7 +9,6 @@ import org.littletonrobotics.junction.AutoLog;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.controls.VoltageOut;
 
 import static edu.wpi.first.units.Units.Degrees;
@@ -110,8 +109,8 @@ public class Elevator extends SubsystemBase {
 
     switch (Constants.currentMode) {
       case REAL:
-        extensionProfiledPIDControl = new ProfiledPIDController(41, 0, 0.15, new TrapezoidProfile.Constraints(2, 2));
-        extensionFeedforward = new ElevatorFeedforward(0.10077, 0.26093, 9.7355, 0.10116);
+        extensionProfiledPIDControl = new ProfiledPIDController(60, 0, 0, new TrapezoidProfile.Constraints(2, 2));
+        extensionFeedforward = new ElevatorFeedforward(1.3378, 0.34237, 8.144, 0.10116);
 
         tiltPIDControl = new ProfiledPIDController(1.8, 0, 0, new TrapezoidProfile.Constraints(40, 50));
         tiltFeedfoward = new ArmFeedforward(0.13857, 0.040253, 0.10339, 0.0058069);
@@ -143,6 +142,7 @@ public class Elevator extends SubsystemBase {
         break;
     }
 
+    // SignalLogger.start();
     io.setBrakeMode(true);
   }
 
@@ -152,6 +152,7 @@ public class Elevator extends SubsystemBase {
     Logger.processInputs("Elevator", elevatorInputs);
 
     double extensionFeedback = extensionProfiledPIDControl.calculate(elevatorInputs.elevatorEncoder);
+  
     double extensionFeedforwardVal = extensionFeedforward.calculate(extensionProfiledPIDControl.getSetpoint().velocity);
 
     if (elevatorInputs.elevatorLimitReached == true) {
@@ -165,12 +166,11 @@ public class Elevator extends SubsystemBase {
       io.setTiltMotorEncoderValue(-5);
     }
 
-    double tiltFeedback = tiltPIDControl.calculate(elevatorInputs.rightTiltPositionRad);
-    double tiltFeedfowardVal = tiltFeedfoward.calculate(tiltPIDControl.getSetpoint().position, tiltPIDControl.getSetpoint().velocity);
+    // double tiltFeedback = tiltPIDControl.calculate(elevatorInputs.rightTiltPositionRad);
+    // double tiltFeedfowardVal = tiltFeedfoward.calculate(tiltPIDControl.getSetpoint().position, tiltPIDControl.getSetpoint().velocity);
 
-    io.setTiltVoltage(tiltFeedback + tiltFeedfowardVal);
+    // io.setTiltVoltage(tiltFeedback + tiltFeedfowardVal);
     
-
     updateTelemetry();
   }
 
@@ -207,6 +207,8 @@ public class Elevator extends SubsystemBase {
   //     this
   //   )
   // );
+
+
 
   // private final MutableMeasure<Voltage> m_appliedTiltVoltage = mutable(Volts.of(0));
   // // Mutable holder for unit-safe linear distance values, persisted to avoid reallocation.
@@ -280,7 +282,7 @@ public class Elevator extends SubsystemBase {
 
   public void setAngle(double angleToSetDeg) {
     tiltAngleSetPointDeg = angleToSetDeg;
-    tiltPIDControl.setGoal(((tiltAngleSetPointDeg + 5) / 2.42) - 2.222);
+    io.runTiltSetpoint(((tiltAngleSetPointDeg + 5) / 2.42) - 2.222);
   }
 
   @AutoLogOutput(key = "Elevator/TiltGoal")
@@ -330,15 +332,15 @@ public class Elevator extends SubsystemBase {
   public void reachState(String state) {
     switch (state) {
       case "in":      
-        reachTarget(13, 0);
+        reachTarget(15, 0);
 
         break;
       case "intake":
-        reachTarget(-3, Units.inchesToMeters(9));
+        reachTarget(-3, Units.inchesToMeters(7.9));
 
         break;
       case "amp":
-        reachTarget(89, Units.inchesToMeters(4));
+        reachTarget(91, Units.inchesToMeters(4));
         
         break;
       default:
@@ -386,7 +388,7 @@ public class Elevator extends SubsystemBase {
 
   @AutoLogOutput(key = "Elevator/TiltSetpoint")
   public double getTiltSetPoint() {
-    return tiltPIDControl.getSetpoint().position;
+    return elevatorInputs.tiltGoal;
   }
 
   @AutoLogOutput(key = "Elevator/ExtensionError")

@@ -44,8 +44,6 @@ public final class Constants {
     public static final Translation2d blueSpeakerReferencePoint = new Translation2d(Units.inchesToMeters(36.179), 5.475);
   }
 
-  public static final Orchestra shush = new Orchestra();
-
   public static final int ledPWMPort = 9;
   public static final int ledLength = 75;
 
@@ -116,7 +114,7 @@ public final class Constants {
     public static final int extensionMotorCANID = 21;
 
     public static final int absoluteEncoderDIO = 9;
-    public static final int neutralModeButton = 7;
+    public static final int neutralModeButton = 6;
   }
 
   public static class ShooterConstants {

@@ -66,8 +66,8 @@ public class Swerve extends SubsystemBase {
 
     // Configure PathPlanner
     AutoBuilder.configureHolonomic(
-      this::getFusedOdometry,
-      this::setFusedOdometry,
+      this::getPose,
+      this::setPose,
       () -> kinematics.toChassisSpeeds(getModuleStates()),
       this::runVelc,
       new HolonomicPathFollowerConfig(

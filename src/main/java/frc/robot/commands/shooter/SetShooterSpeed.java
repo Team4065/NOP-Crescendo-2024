@@ -10,11 +10,16 @@ import frc.robot.RobotContainer;
 public class SetShooterSpeed extends Command {
   /** Creates a new SetIntakeSpeed. */
   boolean end;
+  double threshold;
+  boolean thresholdEnabled;
   double speed;
 
-  public SetShooterSpeed(double speed) {
+  public SetShooterSpeed(double speed, boolean thresholdEnabled, double threshold) {
     // Use addRequirements() here to declare subsystem dependencies.
     this.speed = speed;
+    this.threshold = threshold;
+    this.thresholdEnabled = thresholdEnabled;
+
     addRequirements(RobotContainer.m_shooter);
   }
 
@@ -28,15 +33,23 @@ public class SetShooterSpeed extends Command {
   @Override
   public void execute() {
     RobotContainer.m_shooter.setShooterVoltage(speed);
-    if (RobotContainer.m_shooter.getShooterVelc() > 50) {
+
+    if (RobotContainer.m_shooter.getShooterVelc() > threshold) {
       RobotContainer.m_shooter.setIntakeVoltage(speed);
     }
-    end = RobotContainer.m_shooter.getShooterVelc() > 50;
+
+    if (thresholdEnabled) {
+      end = RobotContainer.m_shooter.getShooterVelc() > threshold && RobotContainer.m_shooter.getBeamBreak();
+    } else if (thresholdEnabled == false) {
+      end = true;
+    }
   }
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    System.out.println("ENDED");
+  }
 
   // Returns true when the command should end.
   @Override

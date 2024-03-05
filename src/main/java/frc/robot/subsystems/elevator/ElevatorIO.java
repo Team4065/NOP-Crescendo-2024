@@ -2,6 +2,7 @@ package frc.robot.subsystems.elevator;
 
 import org.littletonrobotics.junction.AutoLog;
 
+import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.VoltageOut;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -27,7 +28,7 @@ public interface ElevatorIO {
         public Rotation2d absoluteTiltPositionRad = new Rotation2d();
         public double absoluteDeg = 0.0;
         public double absoluteVelc = 0.0;
-
+        
         public double elevatorEncoder = 0;
         public Rotation2d elevatorPositionRad = new Rotation2d();
         public double elevatorVelocityRadPerSec = 0.0;
@@ -35,6 +36,8 @@ public interface ElevatorIO {
         public double elevatorCurrentAmps = 0.0;
         public boolean elevatorLimitReached = false;
         public double elevatorLinearVelocity = 0.0;
+
+        public double tiltGoal = 0.0;
 
         public boolean neturalModeButton = false;
         public boolean isBrakeMode = false;
@@ -55,4 +58,10 @@ public interface ElevatorIO {
     public default void setDistanceSimEncoderInput(double distance) {}
 
     public default void setTiltSimEncoderInput(double angle) {}
+    
+    public default void runTiltSetpoint(double rotations) {}
+
+    public default void setElevatorCustomControl(ControlRequest control) {}
+
+    public default void runElevatorSetpoint(double rotations) {}
 }

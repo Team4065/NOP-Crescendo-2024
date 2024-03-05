@@ -6,7 +6,9 @@ package frc.robot.subsystems.shooter;
 
 import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotContainer;
 
 public class Shooter extends SubsystemBase {
   private ShooterIO io;
@@ -22,6 +24,18 @@ public class Shooter extends SubsystemBase {
   public void periodic() {
     io.updateInputs(shooterInputs);
     Logger.processInputs("Shooter", shooterInputs);
+
+    Pose3d[] elevatorPoses = RobotContainer.m_elevator.getPoses3d();
+    Pose3d[] cameraPoses = RobotContainer.m_vision.cameraPoses();
+
+    Logger.recordOutput("Mechanism3d", 
+      elevatorPoses[0], 
+      elevatorPoses[1], 
+      cameraPoses[0], 
+      cameraPoses[1],
+      cameraPoses[2],
+      cameraPoses[3]
+    );
   }
 
   public void setShooterVoltage(double volts) {

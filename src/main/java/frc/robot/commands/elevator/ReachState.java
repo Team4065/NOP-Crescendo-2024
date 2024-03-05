@@ -10,11 +10,15 @@ import frc.robot.RobotContainer;
 public class ReachState extends Command {
   /** Creates a new SetElevatorLength. */
   boolean end = false;
+  boolean thresholdEnabled;
+  double thresholdAngle;
   String stateName;
 
-  public ReachState(String stateName) {
+  public ReachState(String stateName, boolean thresholdEnabled, double thresholdAngle) {
     // Use addRequirements() here to declare subsystem dependencies.
     this.stateName = stateName;
+    this.thresholdEnabled = thresholdEnabled;
+    this.thresholdAngle = thresholdAngle;
     addRequirements(RobotContainer.m_elevator);
   }
 
@@ -26,7 +30,11 @@ public class ReachState extends Command {
   @Override
   public void execute() {
     RobotContainer.m_elevator.reachState(stateName);
-    end = true;
+    if (thresholdEnabled && RobotContainer.m_elevator.getAngleDeg() < thresholdAngle) {
+      end = true;
+    } else if (thresholdEnabled == false) {
+      end = true;
+    }
   }
 
   // Called once the command ends or is interrupted.

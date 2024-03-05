@@ -198,20 +198,19 @@ public class RobotContainer {
 
     NoteVisualizer.setRobotPoseSupplier(() -> RobotContainer.m_swerve.getPose());
 
-    NamedCommands.registerCommand("shoot", new SetShooterSpeed(6));
-    NamedCommands.registerCommand("stop", new SequentialCommandGroup(new SetShooterSpeed(0), new SetIntakeSpeed(0)));
-    NamedCommands.registerCommand("deploy", new SequentialCommandGroup(new ReachState("intake"), new SetIntakeSpeed(5)));
-    NamedCommands.registerCommand("retract", new ReachState("in"));
+    NamedCommands.registerCommand("shoot", new SetShooterSpeed(6, true, 50));
+    NamedCommands.registerCommand("stop", new SequentialCommandGroup(new SetShooterSpeed(0, false, 0), new SetIntakeSpeed(0)));
+    NamedCommands.registerCommand("deploy", new SequentialCommandGroup(new ReachState("intake", false, 0), new SetIntakeSpeed(5)));
+    NamedCommands.registerCommand("retract", new ReachState("in", true, 14));
 
     m_chooser.addDefaultOption("NOTHING", noAutoCommand);
-    m_chooser.addOption("P1 - 3R", AutoCommandBuilder.returnAutoCommand("Test"));
-    m_chooser.addOption("Test", AutoCommandBuilder.returnAutoCommand("Test Auto"));
+    // m_chooser.addOption("P1 - 3R", AutoCommandBuilder.returnAutoCommand("Test"));
+    // m_chooser.addOption("P1 - 2R", AutoCommandBuilder.returnAutoCommand("Pos 2 - 2 Rings"));
+    // m_chooser.addOption("Test", AutoCommandBuilder.returnAutoCommand("Test Auto"));
     Shuffleboard.getTab("Autonomous").add(m_chooser.getSendableChooser()).withSize(3, 1);
 
     configureBindings();
   }
-
-  double currentAngle = -5;
 
   private void configureBindings() {
     m_swerve.setDefaultCommand(new SwerveControl(
@@ -253,39 +252,39 @@ public class RobotContainer {
     */
     
 
-    // YB.whileTrue(m_elevator.angleRoutine.quasistatic(Direction.kForward));
-    // AB.whileTrue(m_elevator.angleRoutine.quasistatic(Direction.kReverse));
+    // YB.whileTrue(m_elevator.extensionRoutine.quasistatic(Direction.kForward));
+    // AB.whileTrue(m_elevator.extensionRoutine.quasistatic(Direction.kReverse));
     
-    // BB.whileTrue(m_elevator.angleRoutine.dynamic(Direction.kForward));
-    // XB.whileTrue(m_elevator.angleRoutine.dynamic(Direction.kReverse));
+    // BB.whileTrue(m_elevator.extensionRoutine.dynamic(Direction.kForward));
+    // XB.whileTrue(m_elevator.extensionRoutine.dynamic(Direction.kReverse));
 
-    leftButton.onTrue(new InstantCommand(() -> {RobotContainer.m_swerve.setPose(new Pose2d(new Translation2d(1.367, 5.542), new Rotation2d(0)));}));
+    // leftButton.onTrue(new InstantCommand(() -> {RobotContainer.m_swerve.setPose(new Pose2d(new Translation2d(1.367, 5.542), new Rotation2d(0)));}));
 
-    YB.onTrue(new ReachState("amp"));
-    XB.onTrue(new ReachState("in"));
-    AB.onTrue(new SequentialCommandGroup(
-      new ReachState("intake"), 
-      new SetIntakeSpeed(5),
-      new InstantCommand(() -> {m_shooter.goBackWards();})
-    ));
+    // YB.onTrue(new ReachState("amp", false, 0));
+    // XB.onTrue(new ReachState("in", false, 0));
+    // AB.onTrue(new SequentialCommandGroup(
+    //   new ReachState("intake", false, 0), 
+    //   new SetIntakeSpeed(5),
+    //   new InstantCommand(() -> {m_shooter.goBackWards();})
+    // ));
 
-    leftBumper.onTrue(new SetShooterSpeed(6));
-    leftBumper.onFalse(new SetShooterSpeed(0));
+    // leftBumper.onTrue(new SetShooterSpeed(6, true, 50));
+    // leftBumper.onFalse(new SetShooterSpeed(0,false, 0));
 
-    leftButton.onTrue(new InstantCommand(() -> {RobotContainer.m_swerve.setPose(new Pose2d());}));
+    // leftButton.onTrue(new InstantCommand(() -> {RobotContainer.m_swerve.setPose(new Pose2d());}));
 
-    rightButton.onTrue(new InstantCommand(() -> {RobotContainer.m_shooter.setIntakeVoltage(-4);}));
-    rightButton.onFalse(new InstantCommand(() -> {RobotContainer.m_shooter.setIntakeVoltage(0);}));
+    // rightButton.onTrue(new InstantCommand(() -> {RobotContainer.m_shooter.setIntakeVoltage(-4);}));
+    // rightButton.onFalse(new InstantCommand(() -> {RobotContainer.m_shooter.setIntakeVoltage(0);}));
 
-    upButton.onTrue(new SequentialCommandGroup(new ActivateRatchet(false), new WaitCommand(0.2), new RaiseClimber(0.4)));
-    upButton.onFalse(new SequentialCommandGroup(new RaiseClimber(0), new ActivateRatchet(true)));
+    // upButton.onTrue(new SequentialCommandGroup(new ActivateRatchet(false), new WaitCommand(0.2), new RaiseClimber(0.4)));
+    // upButton.onFalse(new SequentialCommandGroup(new RaiseClimber(0), new ActivateRatchet(true)));
 
-    downButton.onTrue(new SequentialCommandGroup(new ActivateRatchet(true), new RaiseClimber(-0.4)));
-    downButton.onFalse(new SequentialCommandGroup(new RaiseClimber(0), new ActivateRatchet(true)));
+    // downButton.onTrue(new SequentialCommandGroup(new ActivateRatchet(true), new RaiseClimber(-0.4)));
+    // downButton.onFalse(new SequentialCommandGroup(new RaiseClimber(0), new ActivateRatchet(true)));
 
 
-    // XB.onTrue(new InstantCommand(() -> {m_elevator.reachExtension(0);}));
-    // YB.onTrue(new InstantCommand(() -> {m_elevator.reachExtension(8);}));
+    XB.onTrue(new InstantCommand(() -> {m_elevator.reachExtension(0);}));
+    YB.onTrue(new InstantCommand(() -> {m_elevator.reachExtension(Units.inchesToMeters(8));}));
 
   }
 

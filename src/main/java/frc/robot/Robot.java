@@ -106,33 +106,13 @@ public class Robot extends LoggedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
 
-    // FOR CONFIGURATION OF CUSTOM ASSETS
-    
-    Logger.recordOutput("CONFIG POSE", new Pose3d());
-
     CommandScheduler.getInstance().run();
-
-    Pose3d[] elevatorPoses = RobotContainer.m_elevator.getPoses3d();
-    Pose3d[] cameraPoses = RobotContainer.m_vision.cameraPoses();
-
-    Logger.recordOutput("Mechanism3d", 
-      elevatorPoses[0], 
-      elevatorPoses[1], 
-      cameraPoses[0], 
-      cameraPoses[1],
-      cameraPoses[2],
-      cameraPoses[3]
-    );
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
   public void disabledInit() {
-    var track = Constants.shush.loadMusic("/home/lvuser/deploy/chirp/vamp_anthem");
-    if (track.isOK()) {
-      System.out.println("track playing");
-      Constants.shush.play();
-    }
+    
   }
   
   @Override
@@ -194,8 +174,6 @@ public class Robot extends LoggedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
     }
-
-    Constants.shush.stop();
   }
 
   /** This function is called periodically during autonomous. */
@@ -212,7 +190,6 @@ public class Robot extends LoggedRobot {
       m_autonomousCommand.cancel();
     }
 
-    Constants.shush.stop();
     RobotContainer.m_elevator.setBrakeMode(true);
   }
 

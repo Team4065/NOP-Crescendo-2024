@@ -47,8 +47,12 @@ public class Vision extends SubsystemBase {
     poseEstimator.update(RobotContainer.m_swerve.getRotation(), RobotContainer.m_swerve.getModulePos());
 
     for (int i = 2; i < 4; i++) {
-      if (cameras[i].getCameraInputs().botpose[0] != 0 && Math.abs(cameras[i].getCameraInputs().camerapose_targetspace[2]) < 2.5 ) {
-        poseEstimator.addVisionMeasurement(cameras[i].getCameraPose(), Timer.getFPGATimestamp() - (cameras[i].getCameraInputs().botpose_wpired[6] / 1000.0));
+      try { 
+        if (cameras[i].getCameraInputs().botpose[0] != 0 && Math.abs(cameras[i].getCameraInputs().camerapose_targetspace[2]) < 2.5 ) {
+          poseEstimator.addVisionMeasurement(cameras[i].getCameraPose(), Timer.getFPGATimestamp() - (cameras[i].getCameraInputs().botpose_wpired[6] / 1000.0));
+        }
+      } catch (Exception e) {
+        
       }
     }
   } 
