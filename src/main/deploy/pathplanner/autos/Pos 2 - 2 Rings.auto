@@ -24,9 +24,46 @@
           }
         },
         {
-          "type": "wait",
+          "type": "named",
           "data": {
-            "waitTime": 1.0
+            "name": "stop"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "deploy"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "P2 - R2 1"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "retract"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": " P2 - R2 2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot"
           }
         },
         {
@@ -36,15 +73,52 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "P2 - R2 3"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "deploy"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "P2 - R2 4"
+                }
+              }
+            ]
+          }
+        },
+        {
           "type": "named",
           "data": {
-            "name": "deploy"
+            "name": "retract"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "P2 - R2 1"
+            "pathName": "P2 - R2 5"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "stop"
           }
         }
       ]

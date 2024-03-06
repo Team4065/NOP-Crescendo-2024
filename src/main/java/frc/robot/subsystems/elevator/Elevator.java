@@ -180,11 +180,6 @@ public class Elevator extends SubsystemBase {
     if (elevatorInputs.tiltReached) {
       io.setTiltMotorEncoderValue(-5);
     }
-
-    // double tiltFeedback = tiltPIDControl.calculate(elevatorInputs.rightTiltPositionRad);
-    // double tiltFeedfowardVal = tiltFeedfoward.calculate(tiltPIDControl.getSetpoint().position, tiltPIDControl.getSetpoint().velocity);
-
-    // io.setTiltVoltage(tiltFeedback + tiltFeedfowardVal);
     
     updateTelemetry();
   }

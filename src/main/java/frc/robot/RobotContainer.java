@@ -77,7 +77,7 @@ public class RobotContainer {
   public static Elevator m_elevator;
   public static Shooter m_shooter;
   public static Climber m_climber;
-  // public static LEDs leds;
+  public static LEDs leds;
 
   public static PowerDistribution pdh;
 
@@ -134,7 +134,7 @@ public class RobotContainer {
           new ClimberIOReal()
         );
 
-        // leds = new LEDs();
+        leds = new LEDs();
 
         pdh = new PowerDistribution(Constants.pdhCANID, ModuleType.kRev);
         pdh.setSwitchableChannel(true);
@@ -198,14 +198,14 @@ public class RobotContainer {
 
     NoteVisualizer.setRobotPoseSupplier(() -> RobotContainer.m_swerve.getPose());
 
-    NamedCommands.registerCommand("shoot", new SetShooterSpeed(6, true, 50));
-    NamedCommands.registerCommand("stop", new SequentialCommandGroup(new SetShooterSpeed(0, false, 0), new SetIntakeSpeed(0)));
-    NamedCommands.registerCommand("deploy", new SequentialCommandGroup(new ReachState("intake", false, 0), new SetIntakeSpeed(5)));
-    NamedCommands.registerCommand("retract", new ReachState("in", true, 14));
+    NamedCommands.registerCommand("shoot", new SetShooterSpeed(6.25, true, 51));
+    NamedCommands.registerCommand("stop", new SequentialCommandGroup(new SetShooterSpeed(0, false, 0), new InstantCommand(() -> {m_shooter.setIntakeVoltage(0);})));
+    NamedCommands.registerCommand("deploy", new SequentialCommandGroup(new ReachState("intake", false, 0), new SetIntakeSpeed(3.25)));
+    NamedCommands.registerCommand("retract", new ReachState("in", true, 14.8));
 
     m_chooser.addDefaultOption("NOTHING", noAutoCommand);
     // m_chooser.addOption("P1 - 3R", AutoCommandBuilder.returnAutoCommand("Test"));
-    // m_chooser.addOption("P1 - 2R", AutoCommandBuilder.returnAutoCommand("Pos 2 - 2 Rings"));
+    m_chooser.addOption("P1 - 2R", AutoCommandBuilder.returnAutoCommand("Pos 2 - 2 Rings"));
     // m_chooser.addOption("Test", AutoCommandBuilder.returnAutoCommand("Test Auto"));
     Shuffleboard.getTab("Autonomous").add(m_chooser.getSendableChooser()).withSize(3, 1);
 
@@ -268,8 +268,9 @@ public class RobotContainer {
       new InstantCommand(() -> {m_shooter.goBackWards();})
     ));
 
-    // leftBumper.onTrue(new SetShooterSpeed(6, true, 50));
-    // leftBumper.onFalse(new SetShooterSpeed(0,false, 0));
+
+    leftBumper.onTrue(new SetShooterSpeed(6, true, 50));
+    leftBumper.onFalse(new SetShooterSpeed(0,false, 0));
 
     // leftButton.onTrue(new InstantCommand(() -> {RobotContainer.m_swerve.setPose(new Pose2d());}));
 

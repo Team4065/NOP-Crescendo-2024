@@ -39,7 +39,7 @@ public class SetShooterSpeed extends Command {
     }
 
     if (thresholdEnabled) {
-      end = RobotContainer.m_shooter.getShooterVelc() > threshold && RobotContainer.m_shooter.getBeamBreak();
+      end = (RobotContainer.m_shooter.getShooterVelc()) > threshold && (RobotContainer.m_shooter.getBeamBreak());
     } else if (thresholdEnabled == false) {
       end = true;
     }
@@ -48,7 +48,7 @@ public class SetShooterSpeed extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    System.out.println("ENDED");
+
   }
 
   // Returns true when the command should end.

@@ -17,7 +17,7 @@ public class Shooter extends SubsystemBase {
 
   public Shooter(ShooterIO io) {
     this.io = io;
-
+    io.setShooterVoltage(2);
   }
 
   @Override
@@ -40,6 +40,7 @@ public class Shooter extends SubsystemBase {
 
   public void setShooterVoltage(double volts) {
     io.setShooterVoltage(volts);
+    System.out.println("REACHED SPEED");
   }
 
   public double getShooterVelc() {
