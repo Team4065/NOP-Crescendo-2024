@@ -15,7 +15,7 @@ public class PathFindingWithPath {
         PathPlannerPath endPathTraj = PathPlannerPath.fromPathFile(endPath);
 
         PathConstraints constraints = new PathConstraints(
-            Units.feetToMeters(Constants.SwerveConstants.MAX_SPEED_FEET), 3, 
+           2, 2,
             Units.degreesToRadians(540), Units.degreesToRadians(720)
         );
 

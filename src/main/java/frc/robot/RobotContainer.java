@@ -12,14 +12,18 @@ import edu.wpi.first.math.util.Units;
 
 import static edu.wpi.first.units.Units.Volts;
 
+import java.time.Instant;
 import java.util.function.Consumer;
 import static edu.wpi.first.units.Units.Meters;
 
 
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.simulation.JoystickSim;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj.util.WPILibVersion;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -35,8 +39,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import frc.robot.commands.FeedForwardCharacterization;
 import frc.robot.commands.climber.ActivateRatchet;
 import frc.robot.commands.climber.RaiseClimber;
+import frc.robot.commands.elevator.ReachCustomState;
 import frc.robot.commands.elevator.ReachState;
-import frc.robot.commands.elevator.ReachTilt;
 import frc.robot.commands.shooter.SetIntakeSpeed;
 import frc.robot.commands.shooter.SetShooterSpeed;
 import frc.robot.commands.swerve.ResetOdo;
@@ -81,7 +85,7 @@ public class RobotContainer {
 
   public static PowerDistribution pdh;
 
-  public static GenericHID controller = new GenericHID(0);
+  public static XboxController controller = new XboxController(0);
   public static JoystickButton AB = new JoystickButton(controller, 1);
   public static JoystickButton XB = new JoystickButton(controller, 3);
   public static JoystickButton BB = new JoystickButton(controller, 2);
@@ -94,6 +98,13 @@ public class RobotContainer {
   public static POVButton rightButton = new POVButton(controller, 90);
   public static POVButton leftButton = new POVButton(controller, 270);
 
+  public static Joystick buttonBox = new Joystick(1);
+  public static JoystickButton B4 = new JoystickButton(buttonBox, 10);
+  public static JoystickButton B5 = new JoystickButton(buttonBox, 9);
+  public static JoystickButton B6 = new JoystickButton(buttonBox, 11);
+  public static JoystickButton B7 = new JoystickButton(buttonBox, 12);
+  public static JoystickButton B1 = new JoystickButton(buttonBox, 6);
+
   public static LoggedDashboardChooser<Command> m_chooser = new LoggedDashboardChooser<>("Auto Chooser");
 
   public static Command noAutoCommand = new InstantCommand();
@@ -101,7 +112,6 @@ public class RobotContainer {
   public static NoteVisualizer noteVis = new NoteVisualizer();
 
   
-
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -199,9 +209,10 @@ public class RobotContainer {
     NoteVisualizer.setRobotPoseSupplier(() -> RobotContainer.m_swerve.getPose());
 
     NamedCommands.registerCommand("shoot", new SetShooterSpeed(6.25, true, 51));
-    NamedCommands.registerCommand("stop", new SequentialCommandGroup(new SetShooterSpeed(0, false, 0), new InstantCommand(() -> {m_shooter.setIntakeVoltage(0);})));
+    NamedCommands.registerCommand("stop", new SequentialCommandGroup(new SetShooterSpeed(3, false, 0), new InstantCommand(() -> {m_shooter.setIntakeVoltage(0);})));
     NamedCommands.registerCommand("deploy", new SequentialCommandGroup(new ReachState("intake", false, 0), new SetIntakeSpeed(3.25)));
-    NamedCommands.registerCommand("retract", new ReachState("in", true, 14.8));
+    NamedCommands.registerCommand("retract", new ReachState("in", true, 11.87));
+    NamedCommands.registerCommand("autoTilt", new ReachCustomState(21.9, true, 0));
 
     m_chooser.addDefaultOption("NOTHING", noAutoCommand);
     // m_chooser.addOption("P1 - 3R", AutoCommandBuilder.returnAutoCommand("Test"));
@@ -258,15 +269,19 @@ public class RobotContainer {
     // BB.whileTrue(m_elevator.extensionRoutine.dynamic(Direction.kForward));
     // XB.whileTrue(m_elevator.extensionRoutine.dynamic(Direction.kReverse));
 
-    // leftButton.onTrue(new InstantCommand(() -> {RobotContainer.m_swerve.setPose(new Pose2d(new Translation2d(1.367, 5.542), new Rotation2d(0)));}));
+    leftButton.onTrue(new InstantCommand(() -> {RobotContainer.m_swerve.setPose(new Pose2d(new Translation2d(1.367, 5.542), new Rotation2d(0)));}));
 
-    YB.onTrue(new ReachState("amp", false, 0));
+    B1.onTrue(new ReachState("amp", false, 0));
+
+    // YB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Stage Middle Finisher", YB));
     XB.onTrue(new ReachState("in", false, 0));
-    AB.onTrue(new SequentialCommandGroup(
+    rightBumper.whileTrue(new SequentialCommandGroup(
       new ReachState("intake", false, 0), 
       new SetIntakeSpeed(5),
-      new InstantCommand(() -> {m_shooter.goBackWards();})
+      new ReachState("in", false, 0)
     ));
+
+    rightBumper.onFalse(new ReachState("in", false, 0));
 
 
     leftBumper.onTrue(new SetShooterSpeed(6, true, 50));
@@ -274,14 +289,56 @@ public class RobotContainer {
 
     // leftButton.onTrue(new InstantCommand(() -> {RobotContainer.m_swerve.setPose(new Pose2d());}));
 
-    // rightButton.onTrue(new InstantCommand(() -> {RobotContainer.m_shooter.setIntakeVoltage(-4);}));
-    // rightButton.onFalse(new InstantCommand(() -> {RobotContainer.m_shooter.setIntakeVoltage(0);}));
+    rightButton.onTrue(new InstantCommand(() -> {RobotContainer.m_shooter.setIntakeVoltage(-4);}));
+    rightButton.onFalse(new InstantCommand(() -> {RobotContainer.m_shooter.setIntakeVoltage(0);}));
 
-    // upButton.onTrue(new SequentialCommandGroup(new ActivateRatchet(false), new WaitCommand(0.2), new RaiseClimber(0.4)));
-    // upButton.onFalse(new SequentialCommandGroup(new RaiseClimber(0), new ActivateRatchet(true)));
+    // B4.onTrue(new SequentialCommandGroup(
+    //   new InstantCommand(() -> {m_climber.setLeftRatchet(false);}),
+    //   new WaitCommand(0.2),
+    //   new InstantCommand(() -> {m_climber.setLeftSpeed(0.4);})
+    // )); 
 
-    // downButton.onTrue(new SequentialCommandGroup(new ActivateRatchet(true), new RaiseClimber(-0.4)));
-    // downButton.onFalse(new SequentialCommandGroup(new RaiseClimber(0), new ActivateRatchet(true)));
+    // B4.onFalse(new SequentialCommandGroup(
+    //   new InstantCommand(() -> {m_climber.setLeftSpeed(0);}),
+    //   new InstantCommand(() -> {m_climber.setLeftRatchet(true);})
+    // )); 
+
+    // B5.onTrue(new SequentialCommandGroup(
+    //   new InstantCommand(() -> {m_climber.setRightRatchet(false);}),
+    //   new WaitCommand(0.2),
+    //   new InstantCommand(() -> {m_climber.setRightSpeed(0.4);})
+    // )); 
+
+    // B5.onFalse(new SequentialCommandGroup(
+    //   new InstantCommand(() -> {m_climber.setRightSpeed(0);}),
+    //   new InstantCommand(() -> {m_climber.setRightRatchet(true);})
+    // )); 
+
+    // B6.onTrue(new SequentialCommandGroup(
+    //   new InstantCommand(() -> {m_climber.setLeftRatchet(true);}),
+    //   new InstantCommand(() -> {m_climber.setLeftSpeed(-0.4);})
+    // ));
+
+    // B6.onFalse(new SequentialCommandGroup(
+    //   new InstantCommand(() -> {m_climber.setLeftSpeed(0);}),
+    //   new InstantCommand(() -> {m_climber.setLeftRatchet(true);})
+    // )); 
+
+    // B7.onTrue(new SequentialCommandGroup(
+    //   new InstantCommand(() -> {m_climber.setRightRatchet(true);}),
+    //   new InstantCommand(() -> {m_climber.setRightSpeed(-0.4);})
+    // ));
+
+    // B7.onFalse(new SequentialCommandGroup(
+    //   new InstantCommand(() -> {m_climber.setRightSpeed(0);}),
+    //   new InstantCommand(() -> {m_climber.setRightRatchet(true);})
+    // )); 
+
+    B5.onTrue(new SequentialCommandGroup(new ActivateRatchet(false), new WaitCommand(0.2), new RaiseClimber(0.4)));
+    B5.onFalse(new SequentialCommandGroup(new RaiseClimber(0), new ActivateRatchet(true)));
+
+    B7.onTrue(new SequentialCommandGroup(new ActivateRatchet(true), new RaiseClimber(-0.4)));
+    B7.onFalse(new SequentialCommandGroup(new RaiseClimber(0), new ActivateRatchet(true)));
 
 
     // XB.onTrue(new InstantCommand(() -> {m_elevator.reachExtension(0);}));

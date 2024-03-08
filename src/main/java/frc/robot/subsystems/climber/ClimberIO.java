@@ -27,4 +27,12 @@ public interface ClimberIO {
     public default void setSpeed(double speed) {}
 
     public default void setRatchet(boolean state) {}
+
+    public default void setRightSpeed(double speed) {}
+    
+    public default void setLeftSpeed(double speed) {}
+
+    public default void setRightRatchet(boolean state) {}
+
+    public default void setLeftRatchet(boolean state) {}
 }

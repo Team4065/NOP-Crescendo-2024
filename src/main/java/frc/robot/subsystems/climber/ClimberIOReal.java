@@ -119,4 +119,24 @@ public class ClimberIOReal implements ClimberIO {
         right.set(state);
         left.set(!state);
     }
+
+    @Override
+    public void setRightSpeed(double speed) {
+        rightTelescopeMotor.set(speed);
+    }
+
+    @Override
+    public void setLeftSpeed(double speed) {
+        leftTelescopeMotor.set(speed);
+    }
+
+    @Override
+    public void setRightRatchet(boolean state) {
+        right.set(state);
+    }
+
+    @Override
+    public void setLeftRatchet(boolean state) {
+        left.set(!state);
+    }
 }

@@ -7,12 +7,12 @@ package frc.robot.commands.elevator;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 
-public class ReachTilt extends Command {
+public class ReachCustomState extends Command {
   /** Creates a new ReachTilt. */
-  boolean end;
-  double angle;
+  boolean end, thresholdEnabled;
+  double angle, meters;
 
-  public ReachTilt(double angle) {
+  public ReachCustomState(double angle, boolean thresholdAngle, double meters) {
     // Use addRequirements() here to declare subsystem dependencies.
     end = false;
     this.angle = angle;
@@ -27,7 +27,13 @@ public class ReachTilt extends Command {
   @Override
   public void execute() {
     RobotContainer.m_elevator.setAngle(angle);
-    end = true;
+    RobotContainer.m_elevator.reachExtension(meters);
+
+    if (thresholdEnabled && (RobotContainer.m_elevator.getAngleDeg() > angle - 0.5) && (RobotContainer.m_elevator.getElevatorEncoder() == meters)) {
+      end = true;
+    } else if (thresholdEnabled == false) {
+      end = true;
+    }
   }
 
   // Called once the command ends or is interrupted.

@@ -51,13 +51,13 @@
         {
           "type": "named",
           "data": {
-            "name": "retract"
+            "name": "autoTilt"
           }
         },
         {
-          "type": "path",
+          "type": "wait",
           "data": {
-            "pathName": " P2 - R2 2"
+            "waitTime": 1.0
           }
         },
         {
@@ -75,7 +75,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "P2 - R2 3"
+            "pathName": " P2 - R2 2"
           }
         },
         {
@@ -100,13 +100,62 @@
         {
           "type": "named",
           "data": {
-            "name": "retract"
+            "name": "autoTilt"
           }
         },
         {
           "type": "path",
           "data": {
             "pathName": "P2 - R2 5"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "stop"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "P2 - R2 6"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "deploy"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "P2 - R2 7"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "autoTilt"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "P2 - R2 8"
           }
         },
         {

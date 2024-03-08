@@ -160,7 +160,7 @@ public class IndividualCam extends SubsystemBase {
   public Pose3d getEstimatedNotePose() {
     if (index == 0) {
       double noteDistance = getNoteDistance();
-      double theta = 90 - cameraInputs.horizontalCrosshairOffset;
+      double theta = 80 - cameraInputs.horizontalCrosshairOffset;
       double estimatedY = Math.sin(theta) * noteDistance;
       double estimatedX = Math.cos(theta) * noteDistance;
 

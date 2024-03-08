@@ -287,7 +287,6 @@ public class Elevator extends SubsystemBase {
 
   public void reachExtension(double extensionMeter) {
     extensionGoal = extensionMeter;
-    double rotationsSetpoint = (Units.metersToInches(extensionMeter) * 33.69) / 14.75;
     extensionProfiledPIDControl.setGoal(extensionGoal);
   }
 
@@ -343,11 +342,11 @@ public class Elevator extends SubsystemBase {
   public void reachState(String state) {
     switch (state) {
       case "in":      
-        reachTarget(15, 0);
+        reachTarget(12, 0);
 
         break;
       case "intake":
-        reachTarget(-3, Units.inchesToMeters(7.9));
+        reachTarget(-4, Units.inchesToMeters(7.9));
 
         break;
       case "amp":

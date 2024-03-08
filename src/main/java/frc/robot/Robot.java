@@ -162,7 +162,6 @@ public class Robot extends LoggedRobot {
 
     RobotContainer.m_elevator.reachExtension(RobotContainer.m_elevator.getElevatorEncoder());    
     RobotContainer.m_elevator.setAngle(RobotContainer.m_elevator.getAngleDeg());
-
   }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
