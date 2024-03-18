@@ -34,6 +34,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
@@ -94,6 +95,9 @@ public class Elevator extends SubsystemBase {
 
   private double tiltAngleSetPointDeg;
   private double extensionGoal;
+
+  private GenericEntry angleEntry = Constants.dataTab.add("ANGLE", 0).getEntry();
+  private GenericEntry extensionEntry = Constants.dataTab.add("EXTENSION", 0).getEntry();
 
   // 13, 7.91
 
@@ -176,12 +180,14 @@ public class Elevator extends SubsystemBase {
     }
 
 
-
     if (elevatorInputs.tiltReached) {
       io.setTiltMotorEncoderValue(-5);
     }
     
     updateTelemetry();
+
+    angleEntry.setDouble(elevatorInputs.absoluteDeg);
+    extensionEntry.setDouble(Units.metersToInches(elevatorInputs.elevatorEncoder));
   }
 
   public boolean getButtonState() {
@@ -347,6 +353,11 @@ public class Elevator extends SubsystemBase {
         break;
       case "intake":
         reachTarget(-4, Units.inchesToMeters(7.9));
+
+        break;
+
+      case "anti-defense":
+        reachTarget(28, Units.inchesToMeters(10));
 
         break;
       case "amp":

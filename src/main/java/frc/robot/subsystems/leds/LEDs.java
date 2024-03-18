@@ -6,27 +6,78 @@ package frc.robot.subsystems.leds;
 
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.RobotContainer;
 
 public class LEDs extends SubsystemBase {
   AddressableLED leds = new AddressableLED(Constants.ledPWMPort);
   AddressableLEDBuffer buffer = new AddressableLEDBuffer(Constants.ledLength);
+  String state = "idle";
 
   public LEDs() {
+    leds.start();
+  }
+
+  public void oneColor(int R, int G, int B) {
     leds.setLength(buffer.getLength());
 
     for (var i = 0; i < buffer.getLength(); i++) {
       // Sets the specified LED to the RGB values for red
-      buffer.setRGB(i, 255, 0, 0);
-   }
+      buffer.setRGB(i, R, G, B);
+    }
    
-   leds.setData(buffer);
-   leds.start();
+    leds.setData(buffer);
+  }
+
+  public void setState(String state) {
+    this.state = state;
   }
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    switch (state) {
+      case "idle":
+        if (RobotContainer.m_shooter.getBeamBreak() == true) {
+          if (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red) {
+            oneColor(255, 0, 0);
+          } else {
+            oneColor(0, 0, 255);
+          }
+        } else {
+          oneColor(0, 255, 0); // orange
+        }
+        
+        break;
+      
+      case "green":
+        oneColor(0, 255, 0);
+
+        break;
+      
+      case "nothing":
+        oneColor(0, 0, 0);
+
+        break;
+
+      case "amplify":
+        oneColor(215, 3, 252);
+
+        break;
+      
+      default:
+        if (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red) {
+          oneColor(255, 0, 0);
+        } else {
+          oneColor(0, 0, 255);
+        }
+        
+        break;
+    }
+
+    leds.start();
   }
+  
 }

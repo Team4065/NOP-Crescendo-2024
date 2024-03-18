@@ -17,6 +17,8 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
 
@@ -49,6 +51,7 @@ public final class Constants {
 
   public static final Field2d displayField = new Field2d();
   public static final HashMap<Command, String> autoRoutines = new HashMap<>(); // HashMap to find the auto name based on what command is selected in SendableChooser
+  public static final ShuffleboardTab dataTab = Shuffleboard.getTab("data");
 
   public static class SwerveConstants {
     public static final double DRIVE_GEAR_RATIO = 8.14;

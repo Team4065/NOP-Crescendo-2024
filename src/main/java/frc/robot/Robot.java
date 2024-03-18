@@ -65,9 +65,8 @@ public class Robot extends LoggedRobot {
       // Running on a real robot, log to a USB stick 
       // The "/U" is there to indicate that the roboRIO will store on the USB
       case REAL:
-        // Logger.addDataReceiver(new WPILOGWriter());
-        Logger.addDataReceiver(new NT4Publisher());
-
+        Logger.addDataReceiver(new WPILOGWriter());
+        // Logger.addDataReceiver(new NT4Publisher());
         break;
 
         // Running a physics simulator, log to local folder

@@ -7,13 +7,16 @@ package frc.robot.subsystems.shooter;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.RobotContainer;
 
 public class Shooter extends SubsystemBase {
   private ShooterIO io;
   private ShooterIOInputsAutoLogged shooterInputs = new ShooterIOInputsAutoLogged();
 
+  private GenericEntry beamBreakEntry = Constants.dataTab.add("BEAMBREAK", true).getEntry();
 
   public Shooter(ShooterIO io) {
     this.io = io;
@@ -36,6 +39,8 @@ public class Shooter extends SubsystemBase {
       cameraPoses[2],
       cameraPoses[3]
     );
+
+    beamBreakEntry.setBoolean(shooterInputs.beamBreak);    
   }
 
   public void setShooterVoltage(double volts) {
