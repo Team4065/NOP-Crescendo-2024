@@ -16,11 +16,12 @@ import java.time.Instant;
 import java.util.function.Consumer;
 import static edu.wpi.first.units.Units.Meters;
 
-
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.simulation.JoystickSim;
@@ -36,9 +37,14 @@ import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
+import frc.robot.Constants.Mode;
 import frc.robot.commands.FeedForwardCharacterization;
-import frc.robot.commands.climber.ActivateRatchet;
-import frc.robot.commands.climber.RaiseClimber;
+import frc.robot.commands.climber.both.ActivateRatchet;
+import frc.robot.commands.climber.both.RaiseClimber;
+import frc.robot.commands.climber.left.LeftMotor;
+import frc.robot.commands.climber.left.LeftRatchet;
+import frc.robot.commands.climber.right.RightMotor;
+import frc.robot.commands.climber.right.RightRatchet;
 import frc.robot.commands.elevator.ReachCustomState;
 import frc.robot.commands.elevator.ReachState;
 import frc.robot.commands.shooter.SetIntakeSpeed;
@@ -178,6 +184,8 @@ public class RobotContainer {
           )
         );
 
+        m_leds = new LEDs();
+
         m_shooter = new Shooter(new ShooterIO() {});
         
         m_climber = new Climber(new ClimberIO() {});
@@ -210,12 +218,20 @@ public class RobotContainer {
     }
 
     NoteVisualizer.setRobotPoseSupplier(() -> RobotContainer.m_swerve.getPose());
-
-    NamedCommands.registerCommand("shoot", new SetShooterSpeed(6.25, true, 51));
-    NamedCommands.registerCommand("stop", new SequentialCommandGroup(new SetShooterSpeed(3, false, 0), new InstantCommand(() -> {m_shooter.setIntakeVoltage(0);})));
-    NamedCommands.registerCommand("deploy", new SequentialCommandGroup(new ReachState("intake", false, 0), new SetIntakeSpeed(3.25)));
-    NamedCommands.registerCommand("retract", new ReachState("in", true, 11.87));
-    NamedCommands.registerCommand("autoTilt", new ReachCustomState(21.9, true, 0));
+    if (Constants.currentMode == Mode.REAL) {
+      NamedCommands.registerCommand("shoot", new SetShooterSpeed(6.25, true, 51));
+      NamedCommands.registerCommand("stop", new SequentialCommandGroup(new SetShooterSpeed(3, false, 0), new InstantCommand(() -> {m_shooter.setIntakeVoltage(0);})));
+      NamedCommands.registerCommand("deploy", new SequentialCommandGroup(new ReachState("intake", false, 0), new SetIntakeSpeed(3.25)));
+      NamedCommands.registerCommand("retract", new ReachState("in", true, 11.87));
+      NamedCommands.registerCommand("autoTilt", new ReachCustomState(21.9, true, 0));
+    } else {
+      NamedCommands.registerCommand("shoot", new InstantCommand());
+      NamedCommands.registerCommand("stop", new InstantCommand());
+      NamedCommands.registerCommand("deploy", new InstantCommand());
+      NamedCommands.registerCommand("retract", new InstantCommand());
+      NamedCommands.registerCommand("autoTilt", new InstantCommand());
+    }
+    
 
     m_chooser.addDefaultOption("NOTHING", noAutoCommand);
     // m_chooser.addOption("P1 - 3R", AutoCommandBuilder.returnAutoCommand("Test"));
@@ -229,42 +245,45 @@ public class RobotContainer {
   private void configureBindings() {
     m_swerve.setDefaultCommand(new SwerveControl(
       m_swerve, 
-      () -> -controller.getRawAxis(1), 
-      () -> -controller.getRawAxis(0), 
+      () -> {
+        if (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue) {
+          return -controller.getRawAxis(1);
+        } else {
+          return controller.getRawAxis(1);
+        }
+      }, 
+      () -> {
+        if (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue) {
+          return -controller.getRawAxis(0);
+        } else {
+          return controller.getRawAxis(0);
+        }
+      }, 
       () -> -controller.getRawAxis(4)
     ));
     
-    // rightBumper.whileTrue(new SequentialCommandGroup(
-    //   new SetSpeed(5),
-    //   new SwerveControl(
-    //     m_swerve, 
-    //     () -> -controller.getRawAxis(1), 
-    //     () -> -controller.getRawAxis(0), 
-    //     () -> MathUtil.clamp(m_swerve.getHeadingFeedback(new Rotation2d(m_swerve.getAutoAimingAngle())), -1, 1))
-    // ));
+    AB.whileTrue(new SequentialCommandGroup(
+      new SetSpeed(5),
+      new SwerveControl(
+        m_swerve, 
+        () -> {
+          if (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue) {
+            return -controller.getRawAxis(1);
+          } else {
+            return controller.getRawAxis(1);
+          }
+        }, 
+        () -> {
+          if (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue) {
+            return -controller.getRawAxis(0);
+          } else {
+            return controller.getRawAxis(0);
+          }
+        }, 
+        () -> MathUtil.clamp(m_swerve.getHeadingFeedback(new Rotation2d(m_swerve.getAutoAimingAngle())), -1, 1))
+    ));
 
-    // rightBumper.onFalse(new SetSpeed(10));
-
-    /* AB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Stage Middle Finisher", AB));
-    BB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Source Finisher 1", BB));
-    XB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("AMP Finisher", XB)); */
-
-    // Manual Control
-   /*  XB.onTrue(new InstantCommand(() -> {m_elevator.setTiltVoltage(-1);}));
-    BB.onTrue(new InstantCommand(() -> {m_elevator.setTiltVoltage(0);}));
-
-    YB.onTrue(new InstantCommand(() -> {m_elevator.setExtensionVoltage(1);}));
-    AB.onTrue(new InstantCommand(() -> {m_elevator.setExtensionVoltage(-1);}));
-    leftBumper.onTrue(new InstantCommand(() -> {m_elevator.setExtensionVoltage(0);}));
-
-
-    upButton.onTrue(new SetShooterSpeed(8));
-    downButton.onTrue(new SetShooterSpeed(0));
-
-    leftButton.onTrue(new SetIntakeSpeed(8));
-    rightButton.onTrue(new SetIntakeSpeed(0));
-    */
-    
+    AB.onFalse(new SetSpeed(10));    
 
     // YB.whileTrue(m_elevator.extensionRoutine.quasistatic(Direction.kForward));
     // AB.whileTrue(m_elevator.extensionRoutine.quasistatic(Direction.kReverse));
@@ -272,7 +291,10 @@ public class RobotContainer {
     // BB.whileTrue(m_elevator.extensionRoutine.dynamic(Direction.kForward));
     // XB.whileTrue(m_elevator.extensionRoutine.dynamic(Direction.kReverse));
 
-    windowButton.onTrue(new InstantCommand(() -> {RobotContainer.m_swerve.setPose(new Pose2d(new Translation2d(1.367, 5.542), new Rotation2d(0)));}));
+    upButton.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Stage Middle Finisher", upButton));
+    downButton.onTrue(PathFindingWithPath.pathFindingAutoBuilder("AMP Finisher", downButton));
+
+    windowButton.onTrue(new ResetOdo(new Pose2d()));
     
     YB.onTrue(new ReachState("anti-defense", false, 0));
 
@@ -285,7 +307,6 @@ public class RobotContainer {
       m_leds.setState("idle");
     }));
 
-    // YB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Stage Middle Finisher", YB));
     XB.onTrue(new ReachState("in", false, 0));
     rightBumper.whileTrue(new SequentialCommandGroup(
       new ReachState("intake", false, 0), 
@@ -304,60 +325,61 @@ public class RobotContainer {
     leftBumper.onTrue(new SetShooterSpeed(6, true, 50));
     leftBumper.onFalse(new SetShooterSpeed(0,false, 0));
 
-    // leftButton.onTrue(new InstantCommand(() -> {RobotContainer.m_swerve.setPose(new Pose2d());}));
-
     BB.onTrue(new InstantCommand(() -> {RobotContainer.m_shooter.setIntakeVoltage(-4);}));
     BB.onFalse(new InstantCommand(() -> {RobotContainer.m_shooter.setIntakeVoltage(0);}));
 
-    // B4.onTrue(new SequentialCommandGroup(
-    //   new InstantCommand(() -> {m_climber.setLeftRatchet(false);}),
-    //   new WaitCommand(0.2),
-    //   new InstantCommand(() -> {m_climber.setLeftSpeed(0.4);})
-    // )); 
+    B5.onTrue(new SequentialCommandGroup(
+      new RightRatchet(false),
+      new WaitCommand(0.2),
+      new RightMotor(0.4)
+    )); 
 
-    // B4.onFalse(new SequentialCommandGroup(
-    //   new InstantCommand(() -> {m_climber.setLeftSpeed(0);}),
-    //   new InstantCommand(() -> {m_climber.setLeftRatchet(true);})
-    // )); 
+    B5.onFalse(new SequentialCommandGroup(
+      new RightMotor(0),
+      new RightRatchet(true)
+    )); 
 
-    // B5.onTrue(new SequentialCommandGroup(
-    //   new InstantCommand(() -> {m_climber.setRightRatchet(false);}),
-    //   new WaitCommand(0.2),
-    //   new InstantCommand(() -> {m_climber.setRightSpeed(0.4);})
-    // )); 
+    B7.onTrue(new SequentialCommandGroup(
+      new RightRatchet(true),
+      new RightMotor(-0.4)
+    ));
 
-    // B5.onFalse(new SequentialCommandGroup(
-    //   new InstantCommand(() -> {m_climber.setRightSpeed(0);}),
-    //   new InstantCommand(() -> {m_climber.setRightRatchet(true);})
-    // )); 
+    B7.onFalse(new SequentialCommandGroup(
+      new RightMotor(0),
+      new RightRatchet(true)
+    )); 
 
-    // B6.onTrue(new SequentialCommandGroup(
-    //   new InstantCommand(() -> {m_climber.setLeftRatchet(true);}),
-    //   new InstantCommand(() -> {m_climber.setLeftSpeed(-0.4);})
-    // ));
 
-    // B6.onFalse(new SequentialCommandGroup(
-    //   new InstantCommand(() -> {m_climber.setLeftSpeed(0);}),
-    //   new InstantCommand(() -> {m_climber.setLeftRatchet(true);})
-    // )); 
 
-    // B7.onTrue(new SequentialCommandGroup(
-    //   new InstantCommand(() -> {m_climber.setRightRatchet(true);}),
-    //   new InstantCommand(() -> {m_climber.setRightSpeed(-0.4);})
-    // ));
 
-    // B7.onFalse(new SequentialCommandGroup(
-    //   new InstantCommand(() -> {m_climber.setRightSpeed(0);}),
-    //   new InstantCommand(() -> {m_climber.setRightRatchet(true);})
-    // )); 
+    B4.whileTrue(new SequentialCommandGroup(
+      new LeftRatchet(false),
+      new WaitCommand(0.2),
+      new LeftMotor(0.4)
+    )); 
+
+    B4.onFalse(new SequentialCommandGroup(
+      new LeftMotor(0),
+      new LeftRatchet(true)
+    )); 
+
+    B6.whileTrue(new SequentialCommandGroup(
+      new LeftRatchet(true),
+      new LeftMotor(-0.4)
+    ));
+
+    B6.onFalse(new SequentialCommandGroup(
+      new LeftMotor(0),
+      new LeftRatchet(true)
+    ));
+
+
 
     // B5.onTrue(new SequentialCommandGroup(new ActivateRatchet(false), new WaitCommand(0.2), new RaiseClimber(0.4)));
     // B5.onFalse(new SequentialCommandGroup(new RaiseClimber(0), new ActivateRatchet(true)));
 
-    // B7.onTrue(new SequentialCommandGroup(new ActivateRatchet(true), new RaiseClimber(-0.4)));
+    // B7.onTrue(new SequentialCommandGroup(new ActivateRatchet(true), new RaiseClimber(-0.6)));
     // B7.onFalse(new SequentialCommandGroup(new RaiseClimber(0), new ActivateRatchet(true)));
-
-
   }
 
   public Command getAutonomousCommand() {

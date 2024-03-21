@@ -66,8 +66,8 @@ public class Swerve extends SubsystemBase {
 
     // Configure PathPlanner
     AutoBuilder.configureHolonomic(
-      this::getPose,
-      this::setPose,
+      this::getFusedOdometry,
+      this::setFusedOdometry,
       () -> kinematics.toChassisSpeeds(getModuleStates()),
       this::runVelc,
       new HolonomicPathFollowerConfig(
@@ -113,6 +113,7 @@ public class Swerve extends SubsystemBase {
 
   public void setFusedOdometry(Pose2d pose) {
     RobotContainer.m_vision.setPose(pose);
+    setPose(pose);
   }
 
   @Override
@@ -234,7 +235,14 @@ public class Swerve extends SubsystemBase {
           pose
         );
       case "red":
-        return 0;
+        return distanceFormula(
+          new Pose2d(
+            Constants.FieldConstants.redSpeakerReferencePoint.getX(),
+            Constants.FieldConstants.redSpeakerReferencePoint.getY(),
+            new Rotation2d()
+          ),
+          pose
+        );
       default:
         return 0;
     }
@@ -247,15 +255,21 @@ public class Swerve extends SubsystemBase {
 
   @AutoLogOutput(key = "Swerve/AutoAimingAngle")
   public double getAutoAimingAngle() {
-    Translation2d robotTranslation = pose.getTranslation();
-    Translation2d speakerVector = robotTranslation.minus(new Translation2d(0, Constants.FieldConstants.blueSpeakerReferencePoint.getY()));
+    Pose2d robotPose = getFusedOdometry();
+    Translation2d robotTranslation = robotPose.getTranslation();
+    Translation2d speakerVector = new Translation2d();
+    if (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue) {
+      speakerVector = robotTranslation.minus(new Translation2d(0, Constants.FieldConstants.blueSpeakerReferencePoint.getY()));
+    } else if (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red) {
+      speakerVector = robotTranslation.minus(new Translation2d(Constants.FieldConstants.redSpeakerReferencePoint.getX(), Constants.FieldConstants.redSpeakerReferencePoint.getY()));
+    }
 
     return speakerVector.getAngle().getRadians();
   }
 
   public double getHeadingFeedback(Rotation2d setPoint) {
-    headingFeedbackVal = headingPID.calculate(pose.getRotation().getRadians(), setPoint.getRadians());
-    return headingPID.calculate(pose.getRotation().getRadians(), setPoint.getRadians());
+    headingFeedbackVal = headingPID.calculate(getFusedOdometry().getRotation().getRadians(), setPoint.getRadians());
+    return headingPID.calculate(getFusedOdometry().getRotation().getRadians(), setPoint.getRadians());
   }
 
   public double getMaxLinearSpeed() {    

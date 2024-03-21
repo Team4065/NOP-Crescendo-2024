@@ -31,7 +31,7 @@ import edu.wpi.first.wpilibj2.command.Command;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-  public static final Mode currentMode = Mode.REAL;
+  public static final Mode currentMode = Mode.SIM;
 
   public static enum Mode {
     REAL,
@@ -44,6 +44,7 @@ public final class Constants {
   public static class FieldConstants {
     public static final AprilTagFieldLayout tagLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
     public static final Translation2d blueSpeakerReferencePoint = new Translation2d(Units.inchesToMeters(36.179), 5.475);
+    public static final Translation2d redSpeakerReferencePoint = new Translation2d(Units.inchesToMeters(651.223), 5.475);
   }
 
   public static final int ledPWMPort = 9;

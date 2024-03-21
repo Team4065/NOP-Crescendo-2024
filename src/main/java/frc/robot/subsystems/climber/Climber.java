@@ -50,8 +50,7 @@ public class Climber extends SubsystemBase {
     io.setRightRatchet(state);
   }
 
-  public void setLeftRatchet(boolean state) {
-    io.setLeftRatchet(state);
-    System.out.println("reached");
+  public void setLeftRatchet(boolean leftState) {
+    io.setLeftRatchet(leftState);
   }
 }

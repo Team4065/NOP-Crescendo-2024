@@ -52,6 +52,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 
 import java.lang.Math; 
 import frc.robot.Constants;
+import frc.robot.Constants.Mode;
 import frc.robot.subsystems.vision.IndividualCam;
 
 public class Elevator extends SubsystemBase {
@@ -178,6 +179,8 @@ public class Elevator extends SubsystemBase {
     } else {  
       io.setElevatorVoltage(extensionFeedback + extensionFeedforwardVal);
     }
+ 
+   
 
 
     if (elevatorInputs.tiltReached) {

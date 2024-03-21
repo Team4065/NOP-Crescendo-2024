@@ -17,7 +17,9 @@ import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTable;
@@ -160,11 +162,16 @@ public class IndividualCam extends SubsystemBase {
   public Pose3d getEstimatedNotePose() {
     if (index == 0) {
       double noteDistance = getNoteDistance();
-      double theta = 80 - cameraInputs.horizontalCrosshairOffset;
-      double estimatedY = Math.sin(theta) * noteDistance;
-      double estimatedX = Math.cos(theta) * noteDistance;
+      double theta = 90 - cameraInputs.horizontalCrosshairOffset;
+      double estimatedY = Units.inchesToMeters(Math.sin(Units.degreesToRadians(theta - 10)) * noteDistance);
+      double estimatedX = Units.inchesToMeters(Math.cos(Units.degreesToRadians(theta - 10)) * noteDistance);
+      Pose3d currentRobot = new Pose3d(RobotContainer.m_swerve.getPose());
 
-      return new Pose3d(RobotContainer.m_swerve.getPose().transformBy(new Transform2d(new Translation2d(Units.inchesToMeters(estimatedX), Units.inchesToMeters(estimatedY)), new Rotation2d())));
+      Pose3d cameraPos = currentRobot.transformBy(new Transform3d(Units.inchesToMeters(10), Units.inchesToMeters(11.25), 0, new Rotation3d()));
+      Pose3d notePos = cameraPos.transformBy(new Transform3d(Units.inchesToMeters(-estimatedX), Units.inchesToMeters(estimatedY), 0, new Rotation3d()));
+
+      return notePos;
+      
     } else {
       return new Pose3d();
     }

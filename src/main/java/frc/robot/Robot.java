@@ -13,7 +13,9 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.net.PortForwarder;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -46,12 +48,15 @@ public class Robot extends LoggedRobot {
 
   private RobotContainer m_robotContainer;
   public static String allianceColor;
+
   ShuffleboardTab autoTab = Shuffleboard.getTab("Autonomous");
   GenericEntry allianceColorWidget = autoTab.add("ALLIANCE", true) 
     .withProperties(Map.of("colorWhenTrue", "blue"))
     .withPosition(0, 1)
     .withSize(3, 1)
     .getEntry();
+
+  GenericEntry matchTimeEntry = Constants.dataTab.add("Match Time", 0).getEntry();
 
   Debouncer neturalModeButtonDebouncer = new Debouncer(0.1, DebounceType.kBoth);
 
@@ -61,6 +66,12 @@ public class Robot extends LoggedRobot {
    */
   @Override
   public void robotInit() {
+
+    // Port forwarding for comp
+    for (int port = 5800; port <= 5807; port++) {
+      PortForwarder.add(port, "limelight.local", port);
+    }
+
     switch (Constants.currentMode) {
       // Running on a real robot, log to a USB stick 
       // The "/U" is there to indicate that the roboRIO will store on the USB
@@ -106,6 +117,7 @@ public class Robot extends LoggedRobot {
     // block in order for anything in the Command-based framework to work.
 
     CommandScheduler.getInstance().run();
+    matchTimeEntry.setDouble(DriverStation.getMatchTime());
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
@@ -116,40 +128,40 @@ public class Robot extends LoggedRobot {
   
   @Override
   public void disabledPeriodic() {
-    // // red --> 1, 2, 3
-    // // blue --> 4, 5, 6
-    // int robotPos = LoggedDriverStation.getDSData().allianceStation; 
-    // allianceColor = (robotPos > 3) ? "BLUE" : "RED";
+    // red --> 1, 2, 3
+    // blue --> 4, 5, 6
+    int robotPos = LoggedDriverStation.getDSData().allianceStation; 
+    allianceColor = (robotPos > 3) ? "BLUE" : "RED";
 
-    // if (robotPos > 3) {
-    //   allianceColorWidget.setBoolean(true);
-    // } else if (robotPos <= 3) {
-    //   allianceColorWidget.setBoolean(false);
-    // } else {
-    //   allianceColorWidget.setString("ERROR");
-    // }
+    if (robotPos > 3) {
+      allianceColorWidget.setBoolean(true);
+    } else if (robotPos <= 3) {
+      allianceColorWidget.setBoolean(false);
+    } else {
+      allianceColorWidget.setString("ERROR");
+    }
 
-    // Trajectory finalTrajectoryToDisplay;
+    Trajectory finalTrajectoryToDisplay;
 
-    // if (RobotContainer.m_chooser.get() != RobotContainer.noAutoCommand) {
-    //   int pathsInAuto = PathPlannerAuto.getPathGroupFromAutoFile(Constants.autoRoutines.get(RobotContainer.m_chooser.get())).size();
-    //   List<Pose2d> posesOnTrajectory = new ArrayList<>();
+    if (RobotContainer.m_chooser.get() != RobotContainer.noAutoCommand) {
+      int pathsInAuto = PathPlannerAuto.getPathGroupFromAutoFile(Constants.autoRoutines.get(RobotContainer.m_chooser.get())).size();
+      List<Pose2d> posesOnTrajectory = new ArrayList<>();
 
-    //   for (int i = 0; i < pathsInAuto; i++) {
-    //       PathPlannerPath currentPath = PathPlannerAuto.getPathGroupFromAutoFile(Constants.autoRoutines.get(RobotContainer.m_chooser.get())).get(i);
-    //       List<PathPoint> pathPoints = currentPath.getAllPathPoints();
-    //     for (int j = 0; j < pathPoints.size(); j++) {
-    //       posesOnTrajectory.add(j, new Pose2d(pathPoints.get(j).position, new Rotation2d(0)));
-    //     }
-    //   }
+      for (int i = 0; i < pathsInAuto; i++) {
+          PathPlannerPath currentPath = PathPlannerAuto.getPathGroupFromAutoFile(Constants.autoRoutines.get(RobotContainer.m_chooser.get())).get(i);
+          List<PathPoint> pathPoints = currentPath.getAllPathPoints();
+        for (int j = 0; j < pathPoints.size(); j++) {
+          posesOnTrajectory.add(j, new Pose2d(pathPoints.get(j).position, new Rotation2d(0)));
+        }
+      }
 
-    //   finalTrajectoryToDisplay = TrajectoryGenerator.generateTrajectory(posesOnTrajectory, new TrajectoryConfig(Units.metersToFeet(Constants.SwerveConstants.MAX_SPEED_FEET), Units.metersToFeet(Constants.SwerveConstants.MAX_SPEED_FEET)));
+      finalTrajectoryToDisplay = TrajectoryGenerator.generateTrajectory(posesOnTrajectory, new TrajectoryConfig(Units.metersToFeet(Constants.SwerveConstants.MAX_SPEED_FEET), Units.metersToFeet(Constants.SwerveConstants.MAX_SPEED_FEET)));
 
-    // } else {
-    //   finalTrajectoryToDisplay = new Trajectory();
-    // }
+    } else {
+      finalTrajectoryToDisplay = new Trajectory();
+    }
 
-    // Constants.displayField.getObject("Field").setTrajectory(finalTrajectoryToDisplay);
+    Constants.displayField.getObject("Field").setTrajectory(finalTrajectoryToDisplay);
 
     if (neturalModeButtonDebouncer.calculate(RobotContainer.m_elevator.getButtonState()) == false) {
       if (RobotContainer.m_elevator.isBrake()) {
