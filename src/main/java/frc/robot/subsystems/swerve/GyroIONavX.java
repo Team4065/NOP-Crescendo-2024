@@ -9,7 +9,6 @@ public class GyroIONavX implements GyroIO {
 
   public GyroIONavX() {
     g_gyro.reset();
-    g_gyro.getRawAccelX();
   }
 
   @Override
@@ -23,6 +22,5 @@ public class GyroIONavX implements GyroIO {
     inputs.xAccel = g_gyro.getVelocityX();
     inputs.yAccel = g_gyro.getVelocityY();
     inputs.zAccel = g_gyro.getVelocityZ();
-
   }
 }

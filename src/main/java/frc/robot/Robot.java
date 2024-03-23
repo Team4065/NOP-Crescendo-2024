@@ -16,6 +16,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.net.PortForwarder;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -60,13 +61,14 @@ public class Robot extends LoggedRobot {
 
   Debouncer neturalModeButtonDebouncer = new Debouncer(0.1, DebounceType.kBoth);
 
+  Timer m_gcTimer = new Timer();
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
   @Override
   public void robotInit() {
-
+    m_gcTimer.start();
     // Port forwarding for comp
     for (int port = 5800; port <= 5807; port++) {
       PortForwarder.add(port, "limelight.local", port);
@@ -76,8 +78,8 @@ public class Robot extends LoggedRobot {
       // Running on a real robot, log to a USB stick 
       // The "/U" is there to indicate that the roboRIO will store on the USB
       case REAL:
-        Logger.addDataReceiver(new WPILOGWriter());
-        // Logger.addDataReceiver(new NT4Publisher());
+        // Logger.addDataReceiver(new WPILOGWriter());
+        Logger.addDataReceiver(new NT4Publisher());
         break;
 
         // Running a physics simulator, log to local folder
@@ -118,6 +120,9 @@ public class Robot extends LoggedRobot {
 
     CommandScheduler.getInstance().run();
     matchTimeEntry.setDouble(DriverStation.getMatchTime());
+    if (m_gcTimer.advanceIfElapsed(5)) {
+      System.gc();
+    }
   }
 
   /** This function is called once each time the robot enters Disabled mode. */

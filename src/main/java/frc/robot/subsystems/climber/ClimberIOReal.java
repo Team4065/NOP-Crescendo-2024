@@ -72,12 +72,12 @@ public class ClimberIOReal implements ClimberIO {
         leftTelescopeMotor.optimizeBusUtilization();
 
         // compressorPCM.enableHybrid(50, 60);
+        // compressorPCM.enableDigital();
         compressorPCM.enableDigital();
 
 
         // TRUE = MOTOR MOVEMENT, FALSE = NO MOTOR MOVEMENT
         // ratchet.set(Value.kForward);
-        setRatchet(true);
     }
 
     @Override

@@ -176,8 +176,9 @@ public class Elevator extends SubsystemBase {
 
     if ((extensionFeedback + extensionFeedforwardVal) < 0 && elevatorInputs.elevatorLimitReached == true) {
       io.setElevatorVoltage(0);
-    } else {  
+    } else {
       io.setElevatorVoltage(extensionFeedback + extensionFeedforwardVal);
+
     }
  
    
@@ -204,6 +205,8 @@ public class Elevator extends SubsystemBase {
   public void setBrakeMode(boolean state) {
     io.setBrakeMode(state);
   }
+
+  boolean angleThreshold = false;
 
   // private final MutableMeasure<Voltage> m_appliedVoltage = mutable(Volts.of(0));
   // // Mutable holder for unit-safe linear distance values, persisted to avoid reallocation.
@@ -351,19 +354,24 @@ public class Elevator extends SubsystemBase {
   public void reachState(String state) {
     switch (state) {
       case "in":      
+        angleThreshold = true;
         reachTarget(12, 0);
 
         break;
       case "intake":
-        reachTarget(-4, Units.inchesToMeters(7.9));
+        angleThreshold = false;
+        reachTarget(-4, Units.inchesToMeters(8));
 
         break;
 
       case "anti-defense":
+        angleThreshold = false;
         reachTarget(28, Units.inchesToMeters(10));
 
         break;
       case "amp":
+
+        angleThreshold = false;
         reachTarget(91, Units.inchesToMeters(4));
         
         break;

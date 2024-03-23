@@ -6,17 +6,17 @@ package frc.robot.commands.swerve;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 
 public class ResetOdo extends Command {
   /** Creates a new ResetOdo. */
   boolean end;
-  Pose2d poseToSet;
-  public ResetOdo(Pose2d poseToSet) {
+  public ResetOdo() {
     // Use addRequirements() here to declare subsystem dependencies.
     this.end = false;
-    this.poseToSet = poseToSet;
   }
 
   // Called when the command is initially scheduled.
@@ -26,7 +26,15 @@ public class ResetOdo extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    RobotContainer.m_swerve.setFusedOdometry(poseToSet);
+    if (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue) {
+      RobotContainer.m_swerve.setPose(
+        new Pose2d(0, 0, new Rotation2d())
+      );
+    } else if (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red) {
+      RobotContainer.m_swerve.setPose(
+        new Pose2d(0, 0, new Rotation2d(180))
+      );
+    }
     end = true;
   }
 

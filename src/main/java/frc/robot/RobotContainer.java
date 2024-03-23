@@ -14,6 +14,9 @@ import static edu.wpi.first.units.Units.Volts;
 
 import java.time.Instant;
 import java.util.function.Consumer;
+
+import javax.swing.plaf.TextUI;
+
 import static edu.wpi.first.units.Units.Meters;
 
 import edu.wpi.first.wpilibj.DriverStation;
@@ -116,7 +119,7 @@ public class RobotContainer {
 
   public static LoggedDashboardChooser<Command> m_chooser = new LoggedDashboardChooser<>("Auto Chooser");
 
-  public static Command noAutoCommand = new InstantCommand();
+  public static Command noAutoCommand = new ResetOdo();
 
   public static NoteVisualizer noteVis = new NoteVisualizer();
 
@@ -222,7 +225,7 @@ public class RobotContainer {
       NamedCommands.registerCommand("shoot", new SetShooterSpeed(6.25, true, 51));
       NamedCommands.registerCommand("stop", new SequentialCommandGroup(new SetShooterSpeed(3, false, 0), new InstantCommand(() -> {m_shooter.setIntakeVoltage(0);})));
       NamedCommands.registerCommand("deploy", new SequentialCommandGroup(new ReachState("intake", false, 0), new SetIntakeSpeed(3.25)));
-      NamedCommands.registerCommand("retract", new ReachState("in", true, 11.87));
+      NamedCommands.registerCommand("retract", new ReachState("in", true, 12.5));
       NamedCommands.registerCommand("autoTilt", new ReachCustomState(21.9, true, 0));
     } else {
       NamedCommands.registerCommand("shoot", new InstantCommand());
@@ -234,9 +237,12 @@ public class RobotContainer {
     
 
     m_chooser.addDefaultOption("NOTHING", noAutoCommand);
-    // m_chooser.addOption("P1 - 3R", AutoCommandBuilder.returnAutoCommand("Test"));
-    m_chooser.addOption("P1 - 2R", AutoCommandBuilder.returnAutoCommand("Pos 2 - 2 Rings"));
-    // m_chooser.addOption("Test", AutoCommandBuilder.returnAutoCommand("Test Auto"));
+
+    m_chooser.addOption("P1 - 1R", AutoCommandBuilder.returnAutoCommand("Pos 1 - 1 ring"));
+    m_chooser.addOption("P2 - 2R", AutoCommandBuilder.returnAutoCommand("Pos 2 - 2 Rings"));
+    m_chooser.addOption("P3 - 1R", AutoCommandBuilder.returnAutoCommand("Pos 3 - 1 ring"));
+
+
     Shuffleboard.getTab("Autonomous").add(m_chooser.getSendableChooser()).withSize(3, 1);
 
     configureBindings();
@@ -249,41 +255,42 @@ public class RobotContainer {
         if (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue) {
           return -controller.getRawAxis(1);
         } else {
-          return controller.getRawAxis(1);
+          return -controller.getRawAxis(1);
         }
       }, 
       () -> {
         if (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue) {
           return -controller.getRawAxis(0);
         } else {
-          return controller.getRawAxis(0);
+          return -controller.getRawAxis(0);
         }
       }, 
-      () -> -controller.getRawAxis(4)
+      () -> -controller.getRawAxis(4), 
+      false
     ));
     
-    AB.whileTrue(new SequentialCommandGroup(
-      new SetSpeed(5),
-      new SwerveControl(
-        m_swerve, 
-        () -> {
-          if (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue) {
-            return -controller.getRawAxis(1);
-          } else {
-            return controller.getRawAxis(1);
-          }
-        }, 
-        () -> {
-          if (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue) {
-            return -controller.getRawAxis(0);
-          } else {
-            return controller.getRawAxis(0);
-          }
-        }, 
-        () -> MathUtil.clamp(m_swerve.getHeadingFeedback(new Rotation2d(m_swerve.getAutoAimingAngle())), -1, 1))
-    ));
+    // AB.whileTrue(new SequentialCommandGroup(
+    //   new SetSpeed(5),
+    //   new SwerveControl(
+    //     m_swerve, 
+    //     () -> {
+    //       if (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue) {
+    //         return -controller.getRawAxis(1);
+    //       } else {
+    //         return controller.getRawAxis(1);
+    //       }
+    //     }, 
+    //     () -> {
+    //       if (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue) {
+    //         return -controller.getRawAxis(0);
+    //       } else {
+    //         return controller.getRawAxis(0);
+    //       }
+    //     }, 
+    //     () -> MathUtil.clamp(m_swerve.getHeadingFeedback(new Rotation2d(m_swerve.getAutoAimingAngle())), -1, 1), true)
+    // ));
 
-    AB.onFalse(new SetSpeed(10));    
+    // AB.onFalse(new SetSpeed(10));    
 
     // YB.whileTrue(m_elevator.extensionRoutine.quasistatic(Direction.kForward));
     // AB.whileTrue(m_elevator.extensionRoutine.quasistatic(Direction.kReverse));
@@ -294,7 +301,7 @@ public class RobotContainer {
     upButton.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Stage Middle Finisher", upButton));
     downButton.onTrue(PathFindingWithPath.pathFindingAutoBuilder("AMP Finisher", downButton));
 
-    windowButton.onTrue(new ResetOdo(new Pose2d()));
+    windowButton.onTrue(new ResetOdo());
     
     YB.onTrue(new ReachState("anti-defense", false, 0));
 
@@ -328,58 +335,37 @@ public class RobotContainer {
     BB.onTrue(new InstantCommand(() -> {RobotContainer.m_shooter.setIntakeVoltage(-4);}));
     BB.onFalse(new InstantCommand(() -> {RobotContainer.m_shooter.setIntakeVoltage(0);}));
 
-    B5.onTrue(new SequentialCommandGroup(
-      new RightRatchet(false),
-      new WaitCommand(0.2),
-      new RightMotor(0.4)
-    )); 
+    // B5.onTrue(new SequentialCommandGroup(
+    //   new RightRatchet(true),
+    //   new WaitCommand(0.5),
+    //   new RightMotor(0.4)
+    // )); 
 
-    B5.onFalse(new SequentialCommandGroup(
-      new RightMotor(0),
-      new RightRatchet(true)
-    )); 
-
-    B7.onTrue(new SequentialCommandGroup(
-      new RightRatchet(true),
-      new RightMotor(-0.4)
-    ));
-
-    B7.onFalse(new SequentialCommandGroup(
-      new RightMotor(0),
-      new RightRatchet(true)
-    )); 
+    // B7.onTrue(new SequentialCommandGroup(
+    //   new RightRatchet(false),
+    //   new RightMotor(-0.4)
+    // ));
 
 
 
 
-    B4.whileTrue(new SequentialCommandGroup(
-      new LeftRatchet(false),
-      new WaitCommand(0.2),
-      new LeftMotor(0.4)
-    )); 
+    // B4.onTrue(new SequentialCommandGroup(
+    //   new LeftRatchet(true),
+    //   new WaitCommand(0.5),
+    //   new LeftMotor(0.4)
+    // )); 
 
-    B4.onFalse(new SequentialCommandGroup(
-      new LeftMotor(0),
-      new LeftRatchet(true)
-    )); 
-
-    B6.whileTrue(new SequentialCommandGroup(
-      new LeftRatchet(true),
-      new LeftMotor(-0.4)
-    ));
-
-    B6.onFalse(new SequentialCommandGroup(
-      new LeftMotor(0),
-      new LeftRatchet(true)
-    ));
+    // B6.onTrue(new SequentialCommandGroup(
+    //   new LeftRatchet(false),
+    //   new LeftMotor(-0.4)
+    // ));
 
 
+    B5.onTrue(new SequentialCommandGroup(new ActivateRatchet(false), new WaitCommand(0.2), new RaiseClimber(0.4)));
+    B5.onFalse(new SequentialCommandGroup(new RaiseClimber(0), new ActivateRatchet(true)));
 
-    // B5.onTrue(new SequentialCommandGroup(new ActivateRatchet(false), new WaitCommand(0.2), new RaiseClimber(0.4)));
-    // B5.onFalse(new SequentialCommandGroup(new RaiseClimber(0), new ActivateRatchet(true)));
-
-    // B7.onTrue(new SequentialCommandGroup(new ActivateRatchet(true), new RaiseClimber(-0.6)));
-    // B7.onFalse(new SequentialCommandGroup(new RaiseClimber(0), new ActivateRatchet(true)));
+    B7.onTrue(new SequentialCommandGroup(new ActivateRatchet(true), new RaiseClimber(-0.6)));
+    B7.onFalse(new SequentialCommandGroup(new RaiseClimber(0), new ActivateRatchet(true)));
   }
 
   public Command getAutonomousCommand() {

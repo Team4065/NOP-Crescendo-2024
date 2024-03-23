@@ -86,6 +86,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         limitSwitchConfig.ForwardLimitEnable = false;
         limitSwitchConfig.ReverseLimitEnable = false;
 
+        rightTiltMotor.getConfigurator().apply(limitSwitchConfig);
         extensionMotor.getConfigurator().apply(limitSwitchConfig);
 
         var feedbackConfigs = new TalonFXConfiguration();

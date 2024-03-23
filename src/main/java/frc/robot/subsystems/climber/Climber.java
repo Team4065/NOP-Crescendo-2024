@@ -8,6 +8,7 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
+import frc.robot.commands.climber.right.RightRatchet;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOInputsAutoLogged;
 
@@ -24,9 +25,14 @@ public class Climber extends SubsystemBase {
     io.updateInputs(climberInputs);
     Logger.processInputs("Climber", climberInputs);
 
-    // if (!RobotContainer.upButton.getAsBoolean() && !RobotContainer.downButton.getAsBoolean()) {
-    //   setSpeed(0);
-    //   setRatchet(false);
+    // if (RobotContainer.B5.getAsBoolean() == false && RobotContainer.B7.getAsBoolean() == false) {
+    //   setRightSpeed(0);
+    //   setRightRatchet(false);
+    // }
+
+    // if (RobotContainer.B4.getAsBoolean() == false && RobotContainer.B6.getAsBoolean() == false) {
+    //   setLeftSpeed(0);
+    //   setLeftRatchet(false);
     // }
   }
 
