@@ -136,6 +136,7 @@ public class Swerve extends SubsystemBase {
 
   public SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
   public SwerveModulePosition[] moduleDeltas = new SwerveModulePosition[4];
+  public SwerveModulePosition[] modulePos = new SwerveModulePosition[4];
 
   @Override
   public void periodic() {
@@ -169,18 +170,18 @@ public class Swerve extends SubsystemBase {
     }
 
     // Update gyro angle
-    if (gyroInputs.isConnected) {
+    // if (gyroInputs.isConnected) {
       // Use the real gyro angle
       if (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue) {
         rawGyroRotation = gyroInputs.yawPos;
       } else {
         rawGyroRotation = gyroInputs.yawPos.plus(new Rotation2d(Units.degreesToRadians(180)));
       }
-    } else {
-      // Use the angle delta from the kinematics and module deltas
-      Twist2d twist = kinematics.toTwist2d(moduleDeltas);
-      rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
-    }
+    // } else {
+    //   // Use the angle delta from the kinematics and module deltas
+    //   Twist2d twist = kinematics.toTwist2d(moduleDeltas);
+    //   rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
+    // }
 
     poseEstimator.update(rawGyroRotation, modulePositions);
 
@@ -188,8 +189,6 @@ public class Swerve extends SubsystemBase {
   }
 
   public SwerveModulePosition[] getModulePos() {
-    SwerveModulePosition[] modulePos = new SwerveModulePosition[4];
-
     for (int i = 0; i < 4; i++) {
       modulePos[i] = modules[i].getModulePos();
     }
