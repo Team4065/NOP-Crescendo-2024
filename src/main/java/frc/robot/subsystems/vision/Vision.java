@@ -49,7 +49,7 @@ public class Vision extends SubsystemBase {
     for (int i = 2; i < 4; i++) {
       try { 
         if (cameras[i].getCameraInputs().botpose[0] != 0 && Math.abs(cameras[i].getCameraInputs().camerapose_targetspace[2]) < 2.5 ) {
-          poseEstimator.addVisionMeasurement(cameras[i].getCameraPose(), Timer.getFPGATimestamp() - (cameras[i].getCameraInputs().botpose_wpired[6] / 1000.0));
+          // poseEstimator.addVisionMeasurement(cameras[i].getCameraPose(), Timer.getFPGATimestamp() - (cameras[i].getCameraInputs().botpose_wpired[6] / 1000.0));
         }
       } catch (Exception e) {
         

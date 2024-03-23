@@ -39,6 +39,7 @@ public class SetShooterSpeed extends Command {
     }
 
     if (thresholdEnabled) {
+      // end = (RobotContainer.m_shooter.getShooterVelc() > threshold);
       end = (RobotContainer.m_shooter.getShooterVelc()) > threshold && (RobotContainer.m_shooter.getBeamBreak());
     } else if (thresholdEnabled == false) {
       end = true;
