@@ -119,10 +119,10 @@ public class Robot extends LoggedRobot {
     // block in order for anything in the Command-based framework to work.
 
     CommandScheduler.getInstance().run();
-    matchTimeEntry.setDouble(DriverStation.getMatchTime());
-    if (m_gcTimer.advanceIfElapsed(5)) {
-      System.gc();
-    }
+    // matchTimeEntry.setDouble(DriverStation.getMatchTime());
+    // if (m_gcTimer.advanceIfElapsed(5)) { /// not sure this is any good
+    //   System.gc();
+    // }
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
@@ -146,27 +146,27 @@ public class Robot extends LoggedRobot {
       allianceColorWidget.setString("ERROR");
     }
 
-    Trajectory finalTrajectoryToDisplay;
+    // Trajectory finalTrajectoryToDisplay;
 
-    if (RobotContainer.m_chooser.get() != RobotContainer.noAutoCommand) {
-      int pathsInAuto = PathPlannerAuto.getPathGroupFromAutoFile(Constants.autoRoutines.get(RobotContainer.m_chooser.get())).size();
-      List<Pose2d> posesOnTrajectory = new ArrayList<>();
+    // if (RobotContainer.m_chooser.get() != RobotContainer.noAutoCommand) {
+    //   int pathsInAuto = PathPlannerAuto.getPathGroupFromAutoFile(Constants.autoRoutines.get(RobotContainer.m_chooser.get())).size();
+    //   List<Pose2d> posesOnTrajectory = new ArrayList<>();
 
-      for (int i = 0; i < pathsInAuto; i++) {
-          PathPlannerPath currentPath = PathPlannerAuto.getPathGroupFromAutoFile(Constants.autoRoutines.get(RobotContainer.m_chooser.get())).get(i);
-          List<PathPoint> pathPoints = currentPath.getAllPathPoints();
-        for (int j = 0; j < pathPoints.size(); j++) {
-          posesOnTrajectory.add(j, new Pose2d(pathPoints.get(j).position, new Rotation2d(0)));
-        }
-      }
+    //   for (int i = 0; i < pathsInAuto; i++) {
+    //       PathPlannerPath currentPath = PathPlannerAuto.getPathGroupFromAutoFile(Constants.autoRoutines.get(RobotContainer.m_chooser.get())).get(i);
+    //       List<PathPoint> pathPoints = currentPath.getAllPathPoints();
+    //     for (int j = 0; j < pathPoints.size(); j++) {
+    //       posesOnTrajectory.add(j, new Pose2d(pathPoints.get(j).position, new Rotation2d(0)));
+    //     }
+    //   }
 
-      finalTrajectoryToDisplay = TrajectoryGenerator.generateTrajectory(posesOnTrajectory, new TrajectoryConfig(Units.metersToFeet(Constants.SwerveConstants.MAX_SPEED_FEET), Units.metersToFeet(Constants.SwerveConstants.MAX_SPEED_FEET)));
+    //   finalTrajectoryToDisplay = TrajectoryGenerator.generateTrajectory(posesOnTrajectory, new TrajectoryConfig(Units.metersToFeet(Constants.SwerveConstants.MAX_SPEED_FEET), Units.metersToFeet(Constants.SwerveConstants.MAX_SPEED_FEET)));
 
-    } else {
-      finalTrajectoryToDisplay = new Trajectory();
-    }
+    // } else {
+    //   finalTrajectoryToDisplay = new Trajectory();
+    // }
 
-    Constants.displayField.getObject("Field").setTrajectory(finalTrajectoryToDisplay);
+    // Constants.displayField.getObject("Field").setTrajectory(finalTrajectoryToDisplay);
 
     if (neturalModeButtonDebouncer.calculate(RobotContainer.m_elevator.getButtonState()) == false) {
       if (RobotContainer.m_elevator.isBrake()) {
