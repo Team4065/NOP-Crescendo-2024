@@ -137,11 +137,18 @@ public class RobotContainer {
           new ModuleIOTalonFX(3)
         );
 
+        // m_vision = new Vision(
+        //   new VisionLimelight("limelight-nopfl"),
+        //   new VisionLimelight("limelight-nopfr"),
+        //   new VisionLimelight("limelight-nopbl"),
+        //   new VisionLimelight("limelight-nopbr")
+        // );
+
         m_vision = new Vision(
-          new VisionLimelight("limelight-nopfl"),
-          new VisionLimelight("limelight-nopfr"),
-          new VisionLimelight("limelight-nopbl"),
-          new VisionLimelight("limelight-nopbr")
+          new VisionIO() {},
+          new VisionIO() {},
+          new VisionIO() {},
+          new VisionIO() {}
         );
 
         m_shooter = new Shooter(

@@ -32,6 +32,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggedDriverStation;
 
+import com.ctre.phoenix6.mechanisms.swerve.SwerveModule;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PathPlannerLogging;
@@ -84,7 +85,7 @@ public class Swerve extends SubsystemBase {
       () -> kinematics.toChassisSpeeds(getModuleStates()),
       this::runVelc,
       new HolonomicPathFollowerConfig(
-        Units.feetToMeters(3.1),
+        3.1,
         drivetrain_radius,
         new ReplanningConfig()
       ),
@@ -129,10 +130,18 @@ public class Swerve extends SubsystemBase {
     setPose(pose);
   }
 
+  public void resetGyro() {
+    gyroIO.resetGyro();
+  }
+
+  public SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
+  public SwerveModulePosition[] moduleDeltas = new SwerveModulePosition[4];
+  public SwerveModulePosition[] modulePos = new SwerveModulePosition[4];
+
   @Override
   public void periodic() {
     gyroIO.updateInputs(gyroInputs);
-    Logger.processInputs("Drive/Gyro", gyroInputs);
+    // Logger.processInputs("Drive/Gyro", gyroInputs);
     for (var module : modules) {
       module.periodic();
     }
@@ -145,13 +154,12 @@ public class Swerve extends SubsystemBase {
     }
     // Log empty setpoint states when disabled
     if (DriverStation.isDisabled()) {
-      Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
-      Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
+      // Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleState[] {});
+      // Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
     }
 
     // Read wheel positions and deltas from each module
-    SwerveModulePosition[] modulePositions = getModulePos();
-    SwerveModulePosition[] moduleDeltas = new SwerveModulePosition[4];
+    modulePositions = getModulePos();
     for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
       moduleDeltas[moduleIndex] =
           new SwerveModulePosition(
@@ -169,11 +177,11 @@ public class Swerve extends SubsystemBase {
       } else {
         rawGyroRotation = gyroInputs.yawPos.plus(new Rotation2d(Units.degreesToRadians(180)));
       }
-    } else {
-      // Use the angle delta from the kinematics and module deltas
-      Twist2d twist = kinematics.toTwist2d(moduleDeltas);
-      rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
-    }
+    // } else {
+    //   // Use the angle delta from the kinematics and module deltas
+    //   Twist2d twist = kinematics.toTwist2d(moduleDeltas);
+    //   rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
+    // }
 
     poseEstimator.update(rawGyroRotation, modulePositions);
 
@@ -181,8 +189,6 @@ public class Swerve extends SubsystemBase {
   }
 
   public SwerveModulePosition[] getModulePos() {
-    SwerveModulePosition[] modulePos = new SwerveModulePosition[4];
-
     for (int i = 0; i < 4; i++) {
       modulePos[i] = modules[i].getModulePos();
     }

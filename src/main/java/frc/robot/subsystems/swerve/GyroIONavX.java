@@ -19,8 +19,10 @@ public class GyroIONavX implements GyroIO {
     inputs.yawDouble = g_gyro.getYaw();
     inputs.yawVelcRadPerSec = Units.degreesToRadians(g_gyro.getRawGyroZ());
     inputs.isReseting = g_gyro.isCalibrating();
-    inputs.xAccel = g_gyro.getVelocityX();
-    inputs.yAccel = g_gyro.getVelocityY();
-    inputs.zAccel = g_gyro.getVelocityZ();
+  }
+
+  @Override
+  public void resetGyro() {
+    g_gyro.reset();
   }
 }
