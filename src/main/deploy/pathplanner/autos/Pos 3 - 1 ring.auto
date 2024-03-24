@@ -34,6 +34,12 @@
           "data": {
             "name": "stop"
           }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "P3 - R1"
+          }
         }
       ]
     }

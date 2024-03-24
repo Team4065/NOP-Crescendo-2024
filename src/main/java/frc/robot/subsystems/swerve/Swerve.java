@@ -170,7 +170,7 @@ public class Swerve extends SubsystemBase {
     }
 
     // Update gyro angle
-    // if (gyroInputs.isConnected) {
+    if (gyroInputs.isConnected) {
       // Use the real gyro angle
       if (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue) {
         rawGyroRotation = gyroInputs.yawPos;
