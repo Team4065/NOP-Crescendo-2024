@@ -182,6 +182,7 @@ public class Swerve extends SubsystemBase {
     //   Twist2d twist = kinematics.toTwist2d(moduleDeltas);
     //   rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
     // }
+    }
 
     poseEstimator.update(rawGyroRotation, modulePositions);
 

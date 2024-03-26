@@ -35,7 +35,8 @@ public class SetShooterSpeed extends Command {
     RobotContainer.m_shooter.setShooterVoltage(speed);
 
     if (RobotContainer.m_shooter.getShooterVelc() > threshold) {
-      RobotContainer.m_shooter.setIntakeVoltage(speed);
+        RobotContainer.m_shooter.setIntakeVoltage(speed);
+
     }
 
     if (thresholdEnabled) {

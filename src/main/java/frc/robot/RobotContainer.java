@@ -147,8 +147,8 @@ public class RobotContainer {
         m_vision = new Vision(
           new VisionIO() {},
           new VisionIO() {},
-          new VisionIO() {},
-          new VisionIO() {}
+          new VisionLimelight("limelight-nopbl") {},
+          new VisionLimelight("limelight-nopbr") {}
         );
 
         m_shooter = new Shooter(
@@ -329,15 +329,16 @@ public class RobotContainer {
     ));
 
     rightBumper.onFalse(new SequentialCommandGroup(
-      new ReachState("in", false, 0),
+      new ReachState("in", false, 0),      
       new InstantCommand(() -> {
         m_leds.setState("idle");
-      })
+      }),
+      new InstantCommand(() -> {RobotContainer.m_shooter.setIntakeVoltage(0);})
     ));
 
 
-    leftBumper.onTrue(new SetShooterSpeed(6, true, 50));
-    leftBumper.onFalse(new SetShooterSpeed(0,false, 0));
+    leftBumper.onTrue(new SetShooterSpeed(7.5, true, 50));
+    leftBumper.onFalse(new SetShooterSpeed(0, false, 0));
 
     BB.onTrue(new InstantCommand(() -> {RobotContainer.m_shooter.setIntakeVoltage(-4);}));
     BB.onFalse(new InstantCommand(() -> {RobotContainer.m_shooter.setIntakeVoltage(0);}));

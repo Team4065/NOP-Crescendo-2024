@@ -2,8 +2,12 @@ package frc.robot.subsystems.shooter;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkPIDController;
 import com.revrobotics.CANSparkBase.ControlType;
@@ -16,12 +20,9 @@ import frc.robot.Constants;
 public class ShooterIOReal implements ShooterIO {
     TalonFX topRollerMotor = new TalonFX(Constants.ShooterConstants.topRollerCANID, "rio");
     TalonFX bottomRollerMotor = new TalonFX(Constants.ShooterConstants.bottomRollerCANID, "rio");
+    TalonFX intakeMotor = new TalonFX(Constants.ShooterConstants.intakeMotorCANID, "rio");
 
-    CANSparkMax intakeMotor = new CANSparkMax(Constants.ShooterConstants.intakeMotorCANID, MotorType.kBrushless);
     DigitalInput beamBreak = new DigitalInput(Constants.ShooterConstants.beamBreakDIO);
-
-    SparkPIDController intakePID = intakeMotor.getPIDController();
-
 
     private final StatusSignal<Double> topRollerPosRad;
     private final StatusSignal<Double> topRollerVelc;
@@ -44,7 +45,10 @@ public class ShooterIOReal implements ShooterIO {
         bottomRollerApplVolts = bottomRollerMotor.getMotorVoltage();
         bottomRollerCurrAmp = bottomRollerMotor.getStatorCurrent();
 
-        intakeMotor.setInverted(false);
+        var brakeMode = new MotorOutputConfigs();
+        brakeMode.NeutralMode = NeutralModeValue.Brake;
+        brakeMode.Inverted = InvertedValue.CounterClockwise_Positive;
+        intakeMotor.getConfigurator().apply(brakeMode);
 
         BaseStatusSignal.setUpdateFrequencyForAll(
             50.0,
@@ -60,12 +64,6 @@ public class ShooterIOReal implements ShooterIO {
 
         topRollerMotor.optimizeBusUtilization();
         bottomRollerMotor.optimizeBusUtilization();
-
-        intakePID.setP(0.1);
-        intakePID.setI(0);
-        intakePID.setD(0);
-
-        intakePID.setOutputRange(-12, 12);
     }
 
     @Override
@@ -91,10 +89,6 @@ public class ShooterIOReal implements ShooterIO {
         inputs.bottomRollerAppliedVolts = bottomRollerApplVolts.getValueAsDouble();
         inputs.bottomRollerCurrentAmps = bottomRollerCurrAmp.getValueAsDouble();
 
-        inputs.intakePositionRad = intakeMotor.getEncoder().getPosition();
-        inputs.intakeVelocityRadPerSec = intakeMotor.getEncoder().getVelocity();
-        inputs.intakeAppliedVolts = intakeMotor.getVoltageCompensationNominalVoltage();
-        inputs.intakeCurrentAmps = intakeMotor.getOutputCurrent();
         inputs.beamBreak = beamBreak.get();
     }
 
@@ -106,12 +100,6 @@ public class ShooterIOReal implements ShooterIO {
 
     @Override
     public void setIntakeVoltage(double volts) {
-        intakeMotor.setVoltage(volts);
-    }
-
-    @Override
-    public void setIntakeRevs(double revs) {
-        intakeMotor.getEncoder().setPosition(0);
-        intakePID.setReference(5, ControlType.kPosition);
+        intakeMotor.setControl(new VoltageOut(volts));
     }
 }
