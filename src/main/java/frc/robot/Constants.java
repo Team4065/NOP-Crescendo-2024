@@ -62,7 +62,7 @@ public final class Constants {
 
     public static final double wheel_radius_meters = Units.inchesToMeters(2);
 
-    public static final double MAX_SPEED_FEET = 6;
+    public static final double MAX_SPEED_FEET = 14;
 
     public static class ModuleConstants {
       // FRONT LEFT

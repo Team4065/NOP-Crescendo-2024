@@ -49,7 +49,7 @@ public class ElevatorIOSim implements ElevatorIO {
         inputs.absoluteTiltPositionRad = new Rotation2d();
 
         inputs.elevatorEncoder = 0.0;
-        inputs.elevatorPositionRad = new Rotation2d();
+        inputs.elevatorPositionRad = 0;
         inputs.elevatorVelocityRadPerSec = elevatorMotor.getAngularVelocityRadPerSec();
         inputs.elevatorAppliedVolts = appliedElevatorMotorVolts;
         inputs.elevatorCurrentAmps = Math.abs(elevatorMotor.getCurrentDrawAmps());

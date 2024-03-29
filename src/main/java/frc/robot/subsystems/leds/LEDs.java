@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
@@ -31,6 +32,8 @@ public class LEDs extends SubsystemBase {
    
     leds.setData(buffer);
   }
+
+
 
   public void setState(String state) {
     this.state = state;
@@ -62,6 +65,10 @@ public class LEDs extends SubsystemBase {
 
         break;
 
+      case "rainbow":
+        oneColor(255, 255, 255);
+      
+        break;
       case "amplify":
         oneColor(215, 3, 252);
 
@@ -76,7 +83,6 @@ public class LEDs extends SubsystemBase {
         
         break;
     }
-
     leds.start();
   }
   

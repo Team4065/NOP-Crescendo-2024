@@ -229,11 +229,17 @@ public class RobotContainer {
 
     NoteVisualizer.setRobotPoseSupplier(() -> RobotContainer.m_swerve.getPose());
     if (Constants.currentMode == Mode.REAL) {
-      NamedCommands.registerCommand("shoot", new SetShooterSpeed(6.25, true, 51));
-      NamedCommands.registerCommand("stop", new SequentialCommandGroup(new SetShooterSpeed(3, false, 0), new InstantCommand(() -> {m_shooter.setIntakeVoltage(0);})));
-      NamedCommands.registerCommand("deploy", new SequentialCommandGroup(new ReachState("intake", false, 0), new SetIntakeSpeed(3.25)));
+      NamedCommands.registerCommand("shoot", new SequentialCommandGroup(
+        new InstantCommand(() -> {
+          m_leds.setState("rainbow");
+        }),
+        new SetShooterSpeed(9, true, 72)
+      ));
+      NamedCommands.registerCommand("stop", new SequentialCommandGroup(new SetShooterSpeed(0, false, 0), new InstantCommand(() -> {m_shooter.setIntakeVoltage(0);m_leds.setState("idle");})));
+      NamedCommands.registerCommand("deploy", new SequentialCommandGroup(new ReachState("intake", false, 0), new SetIntakeSpeed(5)));
       NamedCommands.registerCommand("retract", new ReachState("in", true, 12.5));
       NamedCommands.registerCommand("autoTilt", new ReachCustomState(21.9, true, 0));
+      NamedCommands.registerCommand("autoTilt 2", new ReachCustomState(34, true, 0));
     } else {
       NamedCommands.registerCommand("shoot", new InstantCommand());
       NamedCommands.registerCommand("stop", new InstantCommand());
@@ -305,8 +311,8 @@ public class RobotContainer {
     // BB.whileTrue(m_elevator.extensionRoutine.dynamic(Direction.kForward));
     // XB.whileTrue(m_elevator.extensionRoutine.dynamic(Direction.kReverse));
 
-    upButton.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Stage Middle Finisher", upButton));
-    downButton.onTrue(PathFindingWithPath.pathFindingAutoBuilder("AMP Finisher", downButton));
+    // upButton.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Stage Middle Finisher", upButton));
+    // downButton.onTrue(PathFindingWithPath.pathFindingAutoBuilder("AMP Finisher", downButton));
 
     windowButton.onTrue(new ResetOdo());
     
@@ -337,8 +343,18 @@ public class RobotContainer {
     ));
 
 
-    leftBumper.onTrue(new SetShooterSpeed(7.5, true, 50));
-    leftBumper.onFalse(new SetShooterSpeed(0, false, 0));
+    leftBumper.onTrue(new SequentialCommandGroup(
+      new InstantCommand(() -> {
+        m_leds.setState("rainbow");
+      }),
+      new SetShooterSpeed(9, true, 72)
+    ));
+    leftBumper.onFalse(new SequentialCommandGroup(
+      new InstantCommand(() -> {
+        m_leds.setState("idle");
+      }),
+      new SetShooterSpeed(0, false, 0)
+    ));
 
     BB.onTrue(new InstantCommand(() -> {RobotContainer.m_shooter.setIntakeVoltage(-4);}));
     BB.onFalse(new InstantCommand(() -> {RobotContainer.m_shooter.setIntakeVoltage(0);}));

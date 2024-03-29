@@ -286,7 +286,7 @@ public class IndividualCam extends SubsystemBase {
 
   public Pose2d getCameraPose() {
     if (cameraInputs.botpose_wpiblue.length > 0) {
-      return new Pose2d(cameraInputs.botpose_wpiblue[0], cameraInputs.botpose_wpiblue[1], new Rotation2d(Units.degreesToRadians(cameraInputs.botpose_wpiblue[5])));
+      return new Pose2d(cameraInputs.botpose_wpiblue[0], cameraInputs.botpose_wpiblue[1], RobotContainer.m_swerve.getRotation());
     } else {
       return new Pose2d();
     }

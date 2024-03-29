@@ -30,7 +30,7 @@ public interface ElevatorIO {
         public double absoluteVelc = 0.0;
         
         public double elevatorEncoder = 0;
-        public Rotation2d elevatorPositionRad = new Rotation2d();
+        public double elevatorPositionRad = 0;
         public double elevatorVelocityRadPerSec = 0.0;
         public double elevatorAppliedVolts = 0.0;
         public double elevatorCurrentAmps = 0.0;

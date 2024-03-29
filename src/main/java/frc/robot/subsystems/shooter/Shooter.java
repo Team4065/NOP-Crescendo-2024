@@ -47,7 +47,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public double getShooterVelc() {
-    return shooterInputs.topRollerVelocityRadPerSec;
+    return (shooterInputs.topRollerVelocityRadPerSec + shooterInputs.bottomRollerVelocityRadPerSec) / 2;
   }
 
   public void setIntakeVoltage(double volts) {

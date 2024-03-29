@@ -101,8 +101,8 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         slot0config.kD = 0;
 
         var motionMagicConfigs = feedbackConfigs.MotionMagic;
-        motionMagicConfigs.MotionMagicCruiseVelocity = 94.7;
-        motionMagicConfigs.MotionMagicAcceleration = 108;
+        motionMagicConfigs.MotionMagicCruiseVelocity = 100;
+        motionMagicConfigs.MotionMagicAcceleration = 120;
         motionMagicConfigs.MotionMagicJerk = 1600;
 
         rightTiltMotor.getConfigurator().apply(feedbackConfigs);
@@ -181,8 +181,8 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         inputs.leftTiltCurrentAmps = leftTiltCurrAmp.getValueAsDouble();
 
         // Negating the value since going up equals negative value when instead it should be positive
-        inputs.elevatorEncoder = Units.inchesToMeters(elePosRad.getValueAsDouble() * 14.75 / 33.69);
-        inputs.elevatorPositionRad = new Rotation2d(Units.degreesToRadians(-elePosRad.getValueAsDouble() / 10));
+        inputs.elevatorEncoder = Units.inchesToMeters(elePosRad.getValueAsDouble() * 11.2 / 42.155);
+        inputs.elevatorPositionRad = -elePosRad.getValueAsDouble();
         inputs.elevatorVelocityRadPerSec = -eleVelc.getValueAsDouble() / 10; 
         inputs.elevatorLinearVelocity = 4.5 * (-eleVelc.getValueAsDouble() / 10);
 

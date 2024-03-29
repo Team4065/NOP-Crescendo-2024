@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.7516461186768542,
-      "y": 4.361188722377445
+      "x": 0.9849923017381578,
+      "y": 4.415901154077189
     },
-    "rotation": -60.10109816138543
+    "rotation": -58.53585636913427
   },
   "command": {
     "type": "sequential",
@@ -24,9 +24,65 @@
           }
         },
         {
-          "type": "wait",
+          "type": "named",
           "data": {
-            "waitTime": 1.0
+            "name": "stop"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "P1 - R1 1"
+                }
+              },
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 4.25
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "deploy"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "retract"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "P1 - R1 2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "autoTilt 2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot"
           }
         },
         {
@@ -36,9 +92,22 @@
           }
         },
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "P1 - R1 1"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "retract"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": " P1 - R1 3"
+                }
+              }
+            ]
           }
         }
       ]
