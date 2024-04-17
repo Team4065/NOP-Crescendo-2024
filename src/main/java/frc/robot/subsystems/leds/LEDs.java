@@ -7,6 +7,7 @@ package frc.robot.subsystems.leds;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -17,6 +18,10 @@ public class LEDs extends SubsystemBase {
   AddressableLED leds = new AddressableLED(Constants.ledPWMPort);
   AddressableLEDBuffer buffer = new AddressableLEDBuffer(Constants.ledLength);
   String state = "idle";
+
+  private double m_interval = 0.5;
+  private boolean on = true;
+  private double lastChange;
 
   public LEDs() {
     leds.start();
@@ -31,6 +36,19 @@ public class LEDs extends SubsystemBase {
     }
    
     leds.setData(buffer);
+  }
+
+  public void strobing() {
+    double timestamp = Timer.getFPGATimestamp();
+    if (timestamp - lastChange > m_interval) {
+      on = !on;
+    }
+
+    if (on) {
+      oneColor(255, 255, 255);
+    } else {
+      oneColor(0, 0, 0);
+    }
   }
 
 
@@ -66,7 +84,7 @@ public class LEDs extends SubsystemBase {
         break;
 
       case "rainbow":
-        oneColor(255, 255, 255);
+        strobing();
       
         break;
       case "amplify":

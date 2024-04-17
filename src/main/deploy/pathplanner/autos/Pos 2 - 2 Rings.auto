@@ -55,6 +55,18 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "back"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "P2 - R2 2"
+          }
+        },
+        {
           "type": "wait",
           "data": {
             "waitTime": 1.0
@@ -104,6 +116,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "back"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "P2 - R2 5"
@@ -150,6 +168,12 @@
           "type": "named",
           "data": {
             "name": "autoTilt"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "back"
           }
         },
         {

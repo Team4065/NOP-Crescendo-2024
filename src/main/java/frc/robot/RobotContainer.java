@@ -123,7 +123,7 @@ public class RobotContainer {
 
   public static NoteVisualizer noteVis = new NoteVisualizer();
 
-  
+  // UPLOAD CODE ON 4/6/2024
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -238,8 +238,13 @@ public class RobotContainer {
       NamedCommands.registerCommand("stop", new SequentialCommandGroup(new SetShooterSpeed(0, false, 0), new InstantCommand(() -> {m_shooter.setIntakeVoltage(0);m_leds.setState("idle");})));
       NamedCommands.registerCommand("deploy", new SequentialCommandGroup(new ReachState("intake", false, 0), new SetIntakeSpeed(5)));
       NamedCommands.registerCommand("retract", new ReachState("in", true, 12.5));
-      NamedCommands.registerCommand("autoTilt", new ReachCustomState(21.9, true, 0));
+      NamedCommands.registerCommand("autoTilt", new ReachCustomState(27, true, 0));
       NamedCommands.registerCommand("autoTilt 2", new ReachCustomState(34, true, 0));
+      NamedCommands.registerCommand("back", new SequentialCommandGroup(
+        new InstantCommand(() -> {m_shooter.setIntakeVoltage(-1.5);}),
+        new WaitCommand(0.2),
+        new InstantCommand(() -> {m_shooter.setIntakeVoltage(0);})
+      ));
     } else {
       NamedCommands.registerCommand("shoot", new InstantCommand());
       NamedCommands.registerCommand("stop", new InstantCommand());
@@ -319,13 +324,14 @@ public class RobotContainer {
     YB.onTrue(new ReachState("anti-defense", false, 0));
 
     B3.onTrue(new ReachState("amp", false, 0));
-    B2.onTrue(new ReachState("in", false, 0));
     B1.whileTrue(new InstantCommand(() -> {
       m_leds.setState("amplify");
     }));
     B1.onFalse(new InstantCommand(() -> {
       m_leds.setState("idle");
     }));
+
+    B4.onTrue(new ReachState("intake", false, 0));
 
     XB.onTrue(new ReachState("in", false, 0));
     rightBumper.whileTrue(new SequentialCommandGroup(
@@ -349,7 +355,26 @@ public class RobotContainer {
       }),
       new SetShooterSpeed(9, true, 72)
     ));
+
+    
     leftBumper.onFalse(new SequentialCommandGroup(
+      new InstantCommand(() -> {
+        m_leds.setState("idle");
+      }),
+      new SetShooterSpeed(0, false, 0)
+    ));
+
+    B1.onTrue(new SetShooterSpeed(4, true, 35));
+    B1.onFalse(new SetShooterSpeed(0, false, 0));
+
+    B2.onTrue(new SequentialCommandGroup(
+      new InstantCommand(() -> {
+        m_leds.setState("rainbow");
+      }),
+      new SetShooterSpeed(6, true, 47)
+    ));
+    
+    B2.onFalse(new SequentialCommandGroup(
       new InstantCommand(() -> {
         m_leds.setState("idle");
       }),

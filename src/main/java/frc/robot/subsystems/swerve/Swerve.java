@@ -177,12 +177,13 @@ public class Swerve extends SubsystemBase {
       } else {
         rawGyroRotation = gyroInputs.yawPos.plus(new Rotation2d(Units.degreesToRadians(180)));
       }
+    }
     // } else {
     //   // Use the angle delta from the kinematics and module deltas
     //   Twist2d twist = kinematics.toTwist2d(moduleDeltas);
     //   rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
     // }
-    }
+
 
     poseEstimator.update(rawGyroRotation, modulePositions);
 

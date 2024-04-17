@@ -76,12 +76,6 @@
         {
           "type": "named",
           "data": {
-            "name": "autoTilt 2"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "shoot"
           }
         },

@@ -97,6 +97,8 @@ public class Elevator extends SubsystemBase {
   private double tiltAngleSetPointDeg;
   private double extensionGoal;
 
+  public String currentState;
+
   private GenericEntry angleEntry = Constants.dataTab.add("ANGLE", 0).getEntry();
   private GenericEntry extensionEntry = Constants.dataTab.add("EXTENSION", 0).getEntry();
 
@@ -343,7 +345,8 @@ public class Elevator extends SubsystemBase {
 
   public void reachState(String state) {
     switch (state) {
-      case "in":      
+      case "in":    
+        currentState = "in";  
         angleThreshold = true;
         reachTarget(12, 0);
         break;
@@ -354,13 +357,15 @@ public class Elevator extends SubsystemBase {
         break;
 
       case "anti-defense":
+        currentState = "anti-defense";
         angleThreshold = false;
-        reachTarget(28, Units.inchesToMeters(10));
+        reachTarget(38.75, Units.inchesToMeters(10));
 
         break;
       case "amp":
+        currentState = "amp";
         angleThreshold = false;
-        reachTarget(90, Units.inchesToMeters(5));
+        reachTarget(90, Units.inchesToMeters(6));
         
         break;
       default:
