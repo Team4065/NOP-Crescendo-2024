@@ -52,6 +52,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 
 import java.lang.Math; 
 import frc.robot.Constants;
+import frc.robot.RobotContainer;
 import frc.robot.Constants.Mode;
 import frc.robot.subsystems.vision.IndividualCam;
 
@@ -96,6 +97,8 @@ public class Elevator extends SubsystemBase {
 
   private double tiltAngleSetPointDeg;
   private double extensionGoal;
+
+  public String currentState;
 
   private GenericEntry angleEntry = Constants.dataTab.add("ANGLE", 0).getEntry();
   private GenericEntry extensionEntry = Constants.dataTab.add("EXTENSION", 0).getEntry();
@@ -150,6 +153,19 @@ public class Elevator extends SubsystemBase {
 
     // SignalLogger.start();
     io.setBrakeMode(true);
+
+    // Constants.ElevatorConstants.map.put(14.0, 12.0);
+    // Constants.ElevatorConstants.map.put(34.0, 20.0);
+    // Constants.ElevatorConstants.map.put(59.0, 23.0);
+    // Constants.ElevatorConstants.map.put(85.0, 32.0);
+    // Constants.ElevatorConstants.map.put(109.0, 33.8);
+    // Constants.ElevatorConstants.map.put(134.0, 37.8);
+    Constants.ElevatorConstants.map.put(14.0, 12.0);
+    Constants.ElevatorConstants.map.put(34.0, 23.0);
+    Constants.ElevatorConstants.map.put(59.0, 27.0);
+    Constants.ElevatorConstants.map.put(85.0, 34.0);
+    Constants.ElevatorConstants.map.put(109.0, 37.0);
+    Constants.ElevatorConstants.map.put(134.0, 42.0);
   }
   boolean angleThreshold = false;
 
@@ -341,11 +357,14 @@ public class Elevator extends SubsystemBase {
     return elevatorInputs.rightTiltAppliedVolts;
   }
 
+
   public void reachState(String state) {
     switch (state) {
-      case "in":      
+      case "in":    
+        currentState = "in";  
         angleThreshold = true;
         reachTarget(12, 0);
+
         break;
       case "intake":
         angleThreshold = false;
@@ -354,13 +373,15 @@ public class Elevator extends SubsystemBase {
         break;
 
       case "anti-defense":
+        currentState = "anti-defense";
         angleThreshold = false;
-        reachTarget(28, Units.inchesToMeters(10));
+        reachTarget(38.75, Units.inchesToMeters(10));
 
         break;
       case "amp":
+        currentState = "amp";
         angleThreshold = false;
-        reachTarget(90, Units.inchesToMeters(5));
+        reachTarget(90, Units.inchesToMeters(6));
         
         break;
       default:

@@ -3,6 +3,8 @@ package frc.robot.subsystems.vision;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import frc.robot.RobotContainer;
+import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.subsystems.vision.IndividualCam.SnapshotMode;
 import frc.robot.util.LimelightHelpers;
 
@@ -69,6 +71,9 @@ public class VisionLimelight implements VisionIO {
         inputs.pipeline = getValueLong("pipeline");
         inputs.stream = getValueLong("stream");
         inputs.crop = getValueDoubleArray("crop");
+        inputs.mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(name).pose;
+
+        LimelightHelpers.SetRobotOrientation(name, Swerve.rawGyroRotation.getDegrees(), 0, 0, 0, 0, 0);
     }
 
     /**

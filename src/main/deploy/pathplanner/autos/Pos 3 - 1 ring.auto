@@ -34,6 +34,18 @@
           "data": {
             "name": "stop"
           }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 9.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "P3 - R1"
+          }
         }
       ]
     }
