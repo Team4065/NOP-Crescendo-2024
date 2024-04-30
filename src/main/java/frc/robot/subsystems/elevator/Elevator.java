@@ -52,6 +52,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 
 import java.lang.Math; 
 import frc.robot.Constants;
+import frc.robot.RobotContainer;
 import frc.robot.Constants.Mode;
 import frc.robot.subsystems.vision.IndividualCam;
 
@@ -152,6 +153,19 @@ public class Elevator extends SubsystemBase {
 
     // SignalLogger.start();
     io.setBrakeMode(true);
+
+    // Constants.ElevatorConstants.map.put(14.0, 12.0);
+    // Constants.ElevatorConstants.map.put(34.0, 20.0);
+    // Constants.ElevatorConstants.map.put(59.0, 23.0);
+    // Constants.ElevatorConstants.map.put(85.0, 32.0);
+    // Constants.ElevatorConstants.map.put(109.0, 33.8);
+    // Constants.ElevatorConstants.map.put(134.0, 37.8);
+    Constants.ElevatorConstants.map.put(14.0, 12.0);
+    Constants.ElevatorConstants.map.put(34.0, 23.0);
+    Constants.ElevatorConstants.map.put(59.0, 27.0);
+    Constants.ElevatorConstants.map.put(85.0, 34.0);
+    Constants.ElevatorConstants.map.put(109.0, 37.0);
+    Constants.ElevatorConstants.map.put(134.0, 42.0);
   }
   boolean angleThreshold = false;
 
@@ -343,12 +357,14 @@ public class Elevator extends SubsystemBase {
     return elevatorInputs.rightTiltAppliedVolts;
   }
 
+
   public void reachState(String state) {
     switch (state) {
       case "in":    
         currentState = "in";  
         angleThreshold = true;
         reachTarget(12, 0);
+
         break;
       case "intake":
         angleThreshold = false;

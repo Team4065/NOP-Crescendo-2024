@@ -22,12 +22,17 @@ import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.swerve.modules.Module;
 import frc.robot.subsystems.swerve.modules.ModuleIO;
+import frc.robot.subsystems.vision.IndividualCam;
+import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionLimelight;
+
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggedDriverStation;
@@ -58,7 +63,7 @@ public class Swerve extends SubsystemBase {
         new SwerveModulePosition()
       };
 
-  private Rotation2d rawGyroRotation = new Rotation2d();
+  public static Rotation2d rawGyroRotation = new Rotation2d();
 
   SwerveDriveKinematics kinematics = new SwerveDriveKinematics(getModuleTranslations());
   Pose2d pose = new Pose2d(0, 0, new Rotation2d());
@@ -68,6 +73,8 @@ public class Swerve extends SubsystemBase {
 
   private final PIDController headingPID;
   public double headingFeedbackVal = 0;
+
+  IndividualCam cameras[] = new IndividualCam[4];
 
   /** Creates a new Swerve. */
   public Swerve(GyroIO gyroIO, ModuleIO moduleFL, ModuleIO moduleFR, ModuleIO moduleBL, ModuleIO moduleBR) {
@@ -106,7 +113,15 @@ public class Swerve extends SubsystemBase {
 
     switch (Constants.currentMode) {
       case REAL: 
-        headingPID = new PIDController(2, 0, 0);
+        headingPID = new PIDController(0.75, 0, 0);
+          cameras[0] = new IndividualCam(new VisionIO() {
+            
+          }, 0);
+          cameras[1] = new IndividualCam(new VisionIO() {
+            
+          }, 1);
+          cameras[2] = new IndividualCam(new VisionLimelight("limelight-nopbl"), 2);
+          cameras[3] = new IndividualCam(new VisionLimelight("limelight-nopbr"), 3);
         break;
       
       case SIM:
@@ -141,7 +156,7 @@ public class Swerve extends SubsystemBase {
   @Override
   public void periodic() {
     gyroIO.updateInputs(gyroInputs);
-    // Logger.processInputs("Drive/Gyro", gyroInputs);
+    Logger.processInputs("Drive/Gyro", gyroInputs);
     for (var module : modules) {
       module.periodic();
     }
@@ -186,8 +201,18 @@ public class Swerve extends SubsystemBase {
 
 
     poseEstimator.update(rawGyroRotation, modulePositions);
+     for (int i = 2; i < 4; i++) {
+      try { 
+        if (cameras[i].getCameraInputs().botpose[0] != 0) {
+          poseEstimator.addVisionMeasurement(cameras[i].getCameraPose(), Timer.getFPGATimestamp() - (cameras[i].getCameraInputs().botpose_wpiblue[6] / 1000.0));
+        }
+      } catch (Exception e) {
+        
+      }
+    }
 
     Constants.displayField.setRobotPose(getPose());
+    Logger.recordOutput("Swerve/SpeakerDistance", getDistanceFromSpeaker("blue"));
   }
 
   public SwerveModulePosition[] getModulePos() {
@@ -225,6 +250,10 @@ public class Swerve extends SubsystemBase {
     return max_angular_speed;
   }
 
+  public Rotation2d getRawRotation() {
+    return rawGyroRotation;
+  }
+
 
   @AutoLogOutput(key = "SwerveStates/Measured")
   public SwerveModuleState[] getModuleStates() {
@@ -259,7 +288,7 @@ public class Swerve extends SubsystemBase {
             Constants.FieldConstants.blueSpeakerReferencePoint.getY(),
             new Rotation2d()
           ),
-          pose
+          getPose()
         );
       case "red":
         return distanceFormula(
@@ -295,8 +324,8 @@ public class Swerve extends SubsystemBase {
   }
 
   public double getHeadingFeedback(Rotation2d setPoint) {
-    headingFeedbackVal = headingPID.calculate(getFusedOdometry().getRotation().getRadians(), setPoint.getRadians());
-    return headingPID.calculate(getFusedOdometry().getRotation().getRadians(), setPoint.getRadians());
+    headingFeedbackVal = headingPID.calculate(poseEstimator.getEstimatedPosition().getRotation().getRadians(), setPoint.getRadians());
+    return headingPID.calculate(poseEstimator.getEstimatedPosition().getRotation().getRadians(), setPoint.getRadians());
   }
 
   public double getMaxLinearSpeed() {    

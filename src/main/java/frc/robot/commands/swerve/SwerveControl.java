@@ -12,9 +12,11 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.swerve.Swerve;
 
@@ -22,6 +24,7 @@ public class SwerveControl extends Command {
   Swerve swerve;
   DoubleSupplier xSupp, ySupp, omegaSupp;
   boolean autoAiming;
+  double omega = 0;
   private static final double DEADBAND = 0.1;
 
   /** Creates a new SwerveControl. */
@@ -47,7 +50,11 @@ public class SwerveControl extends Command {
                   Math.hypot(xSupp.getAsDouble(), ySupp.getAsDouble()), DEADBAND);
           Rotation2d linearDirection =
               new Rotation2d(xSupp.getAsDouble(), ySupp.getAsDouble());
-          double omega = MathUtil.applyDeadband(omegaSupp.getAsDouble(), DEADBAND);
+          if (autoAiming == true) {
+            omega = omegaSupp.getAsDouble();
+          } else {
+            omega = MathUtil.applyDeadband(omegaSupp.getAsDouble(), DEADBAND);
+          }
 
           // Square values
           linearMagnitude = linearMagnitude * linearMagnitude;

@@ -2,6 +2,7 @@ package frc.robot.subsystems.vision;
 
 import org.littletonrobotics.junction.AutoLog;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import frc.robot.subsystems.vision.IndividualCam.SnapshotMode;
 
 public interface VisionIO {
@@ -36,6 +37,7 @@ public interface VisionIO {
     public boolean snapshot = false; // IO layer
     public double[] crop = new double[] {};
     public double numTargets = 0;
+    public Pose2d mt2 = new Pose2d();
   }
     
 

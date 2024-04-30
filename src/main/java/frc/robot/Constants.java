@@ -15,6 +15,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -55,7 +56,7 @@ public final class Constants {
   public static final ShuffleboardTab dataTab = Shuffleboard.getTab("data");
 
   public static class SwerveConstants {
-    public static final double DRIVE_GEAR_RATIO = 8.14;
+    public static final double DRIVE_GEAR_RATIO = 6.75;
     public static final double TURN_GEAR_RATIO = 150.0 / 7.0;
 
     public static final int encoderTicks = 2048; // Encoder ticks for CanCoder and REV Encoder 
@@ -92,6 +93,9 @@ public final class Constants {
   }
 
   public static class ElevatorConstants {
+
+    public static InterpolatingDoubleTreeMap map = new InterpolatingDoubleTreeMap();
+
     public static final DCMotor extensionMotorSimGearbox = DCMotor.getFalcon500(2);
     public static final double extensionGearRatio = 10.0;
     public static final double extensionCarriageMassKg = 4;
@@ -118,7 +122,7 @@ public final class Constants {
     public static final int extensionMotorCANID = 21;
 
     public static final int absoluteEncoderDIO = 9;
-    public static final int neutralModeButton = 6;
+    public static final int neutralModeButton = 8;
   }
 
   public static class ShooterConstants {

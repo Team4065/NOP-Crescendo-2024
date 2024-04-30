@@ -28,7 +28,7 @@ public class Vision extends SubsystemBase {
     RobotContainer.m_swerve.getModulePos(), 
     new Pose2d(), 
     VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5)),
-    VecBuilder.fill(0.6, 0.6, Units.degreesToRadians(30))
+    VecBuilder.fill(0.65, 0.65, Units.degreesToRadians(30))
   );
 
   public Vision(VisionIO cameraFL, VisionIO cameraFR, VisionIO cameraBL, VisionIO cameraBR) {
@@ -44,17 +44,17 @@ public class Vision extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // poseEstimator.update(RobotContainer.m_swerve.getRotation(), RobotContainer.m_swerve.getModulePos());
+    poseEstimator.update(RobotContainer.m_swerve.getRotation(), RobotContainer.m_swerve.getModulePos());
 
-    // for (int i = 2; i < 4; i++) {
-    //   try { 
-    //     if (cameras[i].getCameraInputs().botpose[0] != 0 && Math.abs(cameras[i].getCameraInputs().camerapose_targetspace[2]) < 2.5 ) {
-    //       poseEstimator.addVisionMeasurement(cameras[i].getCameraPose(), Timer.getFPGATimestamp() - (cameras[i].getCameraInputs().botpose_wpired[6] / 1000.0));
-    //     }
-    //   } catch (Exception e) {
+    for (int i = 2; i < 4; i++) {
+      try { 
+        if (cameras[i].getCameraInputs().botpose[0] != 0 && Math.abs(cameras[i].getCameraInputs().camerapose_targetspace[2]) < 2.5 ) {
+          poseEstimator.addVisionMeasurement(cameras[i].getCameraPose(), Timer.getFPGATimestamp() - (cameras[i].getCameraInputs().botpose_wpiblue[6] / 1000.0));
+        }
+      } catch (Exception e) {
         
-    //   }
-    // }
+      }
+    }
   } 
 
   @AutoLogOutput(key = "Vision/EstimatedPose2d")

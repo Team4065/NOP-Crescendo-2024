@@ -48,6 +48,7 @@ import frc.robot.commands.climber.left.LeftMotor;
 import frc.robot.commands.climber.left.LeftRatchet;
 import frc.robot.commands.climber.right.RightMotor;
 import frc.robot.commands.climber.right.RightRatchet;
+import frc.robot.commands.elevator.AutoTilt;
 import frc.robot.commands.elevator.ReachCustomState;
 import frc.robot.commands.elevator.ReachState;
 import frc.robot.commands.shooter.SetIntakeSpeed;
@@ -73,6 +74,7 @@ import frc.robot.subsystems.swerve.modules.Module;
 import frc.robot.subsystems.swerve.modules.ModuleIO;
 import frc.robot.subsystems.swerve.modules.ModuleIOSim;
 import frc.robot.subsystems.swerve.modules.ModuleIOTalonFX;
+import frc.robot.subsystems.vision.IndividualCam;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionLimelight;
@@ -122,6 +124,8 @@ public class RobotContainer {
   public static Command noAutoCommand = new ResetOdo();
 
   public static NoteVisualizer noteVis = new NoteVisualizer();
+
+  IndividualCam[] cameras = new IndividualCam[4];
 
   // UPLOAD CODE ON 4/6/2024
 
@@ -179,20 +183,12 @@ public class RobotContainer {
         );
         m_elevator = new Elevator(new ElevatorIOSim());
 
-        m_vision = new Vision(
+         m_vision = new Vision(
           new VisionIO() {},
           new VisionIO() {},
-          new VisionSimIO(
-            m_swerve::getPose,
-            Constants.LimelightPositions.camPosBL,
-            "sim_cam_BL"
-          ),
-          new VisionSimIO(
-            m_swerve::getPose,
-            Constants.LimelightPositions.camPosBR,
-            "sim_cam_BR"
-          )
-        );
+          new VisionIO() {},
+          new VisionIO() {}
+        );;
 
         m_leds = new LEDs();
 
@@ -287,28 +283,30 @@ public class RobotContainer {
       false
     ));
     
-    // AB.whileTrue(new SequentialCommandGroup(
-    //   new SetSpeed(5),
-    //   new SwerveControl(
-    //     m_swerve, 
-    //     () -> {
-    //       if (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue) {
-    //         return -controller.getRawAxis(1);
-    //       } else {
-    //         return controller.getRawAxis(1);
-    //       }
-    //     }, 
-    //     () -> {
-    //       if (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue) {
-    //         return -controller.getRawAxis(0);
-    //       } else {
-    //         return controller.getRawAxis(0);
-    //       }
-    //     }, 
-    //     () -> MathUtil.clamp(m_swerve.getHeadingFeedback(new Rotation2d(m_swerve.getAutoAimingAngle())), -1, 1), true)
-    // ));
+    AB.whileTrue(new ParallelCommandGroup(
+      new SwerveControl(
+        m_swerve, 
+        () -> {
+          if (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue) {
+            return -controller.getRawAxis(1);
+          } else {
+            return controller.getRawAxis(1);
+          }
+        }, 
+        () -> {
+          if (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Blue) {
+            return -controller.getRawAxis(0);
+          } else {
+            return controller.getRawAxis(0);
+          }
+        }, 
+        () -> MathUtil.clamp(m_swerve.getHeadingFeedback(new Rotation2d(m_swerve.getAutoAimingAngle())), -1, 1), true),
+        new AutoTilt()  
+      )
+    );
 
-    // AB.onFalse(new SetSpeed(10));    
+    AB.onFalse(new ReachState("in", false, 0));
+
 
     // YB.whileTrue(m_elevator.extensionRoutine.quasistatic(Direction.kForward));
     // AB.whileTrue(m_elevator.extensionRoutine.quasistatic(Direction.kReverse));
